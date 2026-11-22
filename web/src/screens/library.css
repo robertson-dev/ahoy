@@ -1,0 +1,99 @@
+/* Library (/library) and On the way (/downloads): M/lfs/library-wall/Library-Wall.dc.html (numbers from its gen.mjs).
+   The control row sits 28 under the bar (176 on the board), the first shelf 48 under it (260), shelves 80 apart, 96 at the end.
+   A shelf: its name in a 204 rail (Bricolage 800 24/28), then the wall on the columns after it (x 276 at 1440: five 204 cards).
+   From 1280 up the board's composition stays (the rail beside, the wall wrapping to four columns under 1440); below 1280 the
+   rail stacks above the wall, as the brief has two-column areas do, so the wall gets the rail's column back (five cards at
+   1200, four down to 968) and the tickets stay two to a row down to 1100. Walls never shrink the art. */
+
+.lib { padding: 28px var(--page-r) 96px var(--page-x); }
+.lib-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; min-height: 36px; }
+.lib-controls .chips { gap: 8px; }
+.lib-controls-end { display: flex; align-items: center; gap: 12px; }
+/* the view switch (the wall's controls, the list's pane): two round buttons on one quiet pill */
+.lib-view { display: inline-flex; flex: none; gap: 2px; padding: 2px; border-radius: 20px; background: var(--fill-quiet); box-shadow: inset 0 0 0 1px var(--hair-2); }
+
+/* ── a shelf: the rail and its wall ── */
+/* the rail is 204, the wall five 204 cards at 1440 (the page scrollbar lives in the right margin: ahoy.css --page-r) */
+.lib-sec { display: grid; grid-template-columns: 204px minmax(0, 1fr); column-gap: 24px; align-items: start; margin-top: 80px; }
+.lib-shelves > .lib-sec:first-child { margin-top: 48px; }
+.lib-top > .lib-sec:first-child { margin-top: 0; }
+.lib-rail { margin: 0; font: 800 24px/28px var(--display); letter-spacing: -.01em; color: var(--fg); overflow-wrap: break-word; }
+.lib-body { min-width: 0; }
+.lib-wall { display: grid; grid-template-columns: repeat(auto-fill, 204px); gap: 40px 24px; margin: 0; padding: 0; list-style: none; }
+.lib-wall > li { min-width: 0; }
+.lib-quiet { margin: 0; font-size: 15px; font-weight: 500; line-height: 28px; color: var(--fg-2); }
+
+/* ── Your other PCs (On the way): what is to be installed there, a row each ── */
+.od-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 720px; }
+.od-row { display: flex; align-items: center; gap: 16px; padding: 8px 12px 8px 8px; border-radius: 16px; background: var(--card); }
+.od-hit { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; border-radius: 10px; }
+.od-tx { display: grid; min-width: 0; }
+.od-tx b { font-size: 15px; font-weight: 600; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.od-tx small { font-size: 13px; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a.od-hit:hover b { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+
+
+/* ── On the way: a ticket per moving game, two to a row at 1440 (544 × 224), one when the wall is narrower ──
+   Two to a row while each keeps a 312 info column (496 wide: who asked and Cancel fit; the state line drops its rate first,
+   library-parts StateText), so from 1344 beside the rail and from 1100 stacked; else one, up to 600. */
+.tk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 496px), 1fr)); gap: 24px 28px; justify-items: start; margin: 0; padding: 0; list-style: none; }
+.tk { position: relative; display: grid; grid-template-columns: 128px minmax(0, 1fr); column-gap: 24px; width: 100%; max-width: 600px; min-height: 224px; padding: 16px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair-1); --av-ring: var(--card); }
+.tk-art { display: block; width: 128px; height: 192px; border-radius: 12px; align-self: start; }
+.tk-art:hover .pa > img { filter: brightness(1.06); }
+.tk-art:hover .pa > img.pa-grey { filter: grayscale(1) brightness(.46); }
+.tk-info { display: flex; flex-direction: column; min-width: 0; min-height: 192px; }
+.tk-name { display: block; height: 36px; margin-top: -8px; font-size: 17px; font-weight: 600; line-height: 36px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tk-name:hover { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+.tk-state { position: relative; height: 20px; margin: 0; font-size: 15px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tk-state b { color: var(--fg); font-weight: 600; }
+.tk-whole { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; white-space: nowrap; }   /* the whole line, measured */
+.tk-info > .jl { margin-top: 32px; flex: none; }
+.tk-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 36px; margin-top: auto; }
+/* the two ellipsis boxes keep 4 px of room inside their clip (padding, cancelled by the margin), so a focused name's ring
+   (2 px at 2 px) shows whole instead of a sliver */
+.tk-asked { display: flex; align-items: center; gap: 6px; min-width: 0; margin: -4px; padding: 4px; font-size: 13px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; }
+.tk-asked > span:first-child, .tk-face { flex: none; }
+.tk-face { display: flex; }
+.tk-by { min-width: 0; margin: -4px; padding: 4px; overflow: hidden; text-overflow: ellipsis; }
+.tk-who:focus-visible { border-radius: 4px; }
+.tk-who { color: var(--fg); font-weight: 600; }
+.tk-who:hover { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+/* the board's 96 × 36 action, its label set 3 px left of centre */
+.tk-foot > .btn.s36.tk-act, .tk-foot > .btn.s36.tk-act:has(> .ic) { width: 96px; padding: 0 3px 0 0; }
+
+/* ── loading: the wall's shape in grey ── */
+.lib-rail-ph { display: block; width: 132px; height: 24px; margin-top: 2px; border-radius: 8px; background: var(--surface-2); }
+.lib-ph-art { display: block; width: 204px; height: 304px; border-radius: 20px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--hair-2); }
+.lib-ph-name { display: block; width: 128px; height: 12px; margin-top: 16px; border-radius: 6px; background: var(--surface-2); }
+.lib-ph-line { display: block; width: 84px; height: 10px; margin-top: 12px; border-radius: 5px; background: var(--surface-2); }
+.lib-ph-tk-art { display: block; width: 128px; height: 192px; border-radius: 12px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--hair-2); }
+.tk-ph .lib-ph-name { margin-top: 4px; width: 160px; }
+.lib-top > .lib-skel { margin-top: 0; }
+.lib-skel { animation: lib-in .4s var(--ease) backwards .3s; }   /* a fast load never flashes it */
+@keyframes lib-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── nothing to show: one quiet block where the shelves would be ── */
+.lib-shelves > .es { margin-top: 48px; }
+
+/* ── narrower windows: the rail stacks above its shelf ── */
+@media (max-width: 1279px) {
+  .lib-sec { grid-template-columns: minmax(0, 1fr); row-gap: 20px; margin-top: 64px; }
+  /* flush lines the dates up with a heading beside them; under a heading, today's panel wants the band's room above it */
+  .lib-soon .cal.flush > .cal-band:first-child { padding-top: 16px; }
+}
+@media (max-width: 560px) {
+  .tk { grid-template-columns: 96px minmax(0, 1fr); column-gap: 16px; padding: 12px; min-height: 0; }
+  .tk-art { width: 96px; height: 144px; }
+  .tk-art .pa { width: 96px !important; height: 144px !important; }
+  .tk-info { min-height: 144px; }
+  .tk-info > .jl { margin-top: 20px; }
+  .tk-info > .jl .jl-words { display: none; }
+  .tk-foot { flex-wrap: wrap; height: auto; gap: 8px; margin-top: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .lib-skel { animation: none; } }
+
+/* motion (ui/motion.ts): the shelves come into focus in reading order */
+.lib-sec:not(.lib-skel) { animation: focus-in var(--t-in) var(--ease) backwards; }
+.lib-sec:nth-of-type(2) { animation-delay: .06s; } .lib-sec:nth-of-type(3) { animation-delay: .12s; }
+.lib-sec:nth-of-type(4) { animation-delay: .18s; } .lib-sec:nth-of-type(n+5) { animation-delay: .24s; }
+@media (prefers-reduced-motion: reduce) { .lib-sec:not(.lib-skel) { animation: none; } }

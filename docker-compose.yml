@@ -1,0 +1,21 @@
+# Ahoy — the player-facing server. ludarr (the engine) runs as its own container; point Ahoy at it here or
+# let the first admin enter it in the web UI.
+services:
+  ahoy:
+    build: .
+    image: ahoy:latest
+    container_name: ahoy
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8790:8790"
+    environment:
+      PORT: "8790"
+      AHOY_CONFIG: /config
+      LUDARR_URL: ${LUDARR_URL:-}            # e.g. http://<server>:7979
+      LUDARR_API_KEY: ${LUDARR_API_KEY:-}    # ludarr → Settings → General
+      # the Home's cards cut their subject out with a 973 MB model (downloaded into /config/models once); one cut-out
+      # pass peaks at about 7.5 GB of RAM. "off" keeps every card a dissolve and downloads nothing.
+      CARD_CUTOUTS: ${CARD_CUTOUTS:-on}
+    volumes:
+      - /mnt/user/appdata/ahoy:/config         # ahoy-app.db, the art cache, the published launcher

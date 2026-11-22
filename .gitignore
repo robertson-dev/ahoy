@@ -1,0 +1,18 @@
+# ahoy — server + web + deploy. The desktop launcher is its own repo (launcher/ → ahoy-launcher).
+node_modules/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
+.env.*
+!.env.example
+# built from web/ (bun run build; the Dockerfile builds it too)
+server/public/
+# separate repo: ahoy-launcher
+launcher/
+# dead pre-ludarr ship, not part of this repo
+backend/
+frontend/
+.DS_Store
+Thumbs.db

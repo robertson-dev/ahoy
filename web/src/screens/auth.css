@@ -1,0 +1,86 @@
+/* The doors (session.tsx): the front page a browser sees, sign in and sign up, the first account, connecting the engine,
+   and the waits. Prefix au-. They speak the Home's language:
+     the backdrop  the server's newest games, one at a time: the Home's spotlight with the art alone (ui/spotlight.tsx, bare),
+                   focus-pulled from one game to the next every 8 s
+     the fan       the Home's fan of generated cards for the same games (ui/fan.tsx ShelfFan), nothing to click, turning with
+                   the backdrop and kept 24 px under the column (session.tsx useDoorFan)
+     the strip     the top bar's place, empty but for Back and an action; in the launcher, the window's title bar
+     the column    on the spotlight's text edge: the name (Bricolage 800) or the page title, one facts line, the actions,
+                   fields as Settings draws them, and the front page's facts on frosted glass
+   A door opens in reading order: each line of the column comes into focus a beat after the one above it. */
+
+.au { position: relative; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); overflow: clip; isolation: isolate; }
+.au-wait { display: grid; place-items: center; }
+
+/* ── behind the strip and the column: the backdrop, then the fan ── */
+.au > .au-back { position: absolute; left: 0; right: 0; top: 0; z-index: 0; pointer-events: none; }
+.au > .hf { z-index: 1; animation-delay: .35s; }
+
+/* ── the strip ── */
+.au-top { position: relative; z-index: 2; flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; height: var(--bar-h); padding: 0 var(--page-r) 0 var(--page-x); }
+.au-top-l { justify-self: start; display: flex; }
+.au-top-r { justify-self: end; display: flex; align-items: center; gap: 12px; }
+.au.framed .au-top { -webkit-app-region: drag; --caption-room: max(0px, calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px - var(--page-x))); }
+.au.framed .au-top button, .au.framed .au-top a { -webkit-app-region: no-drag; }
+@media (max-width: 1279px), (max-height: 760px) { .au.framed .au-top-r { padding-right: var(--caption-room); } }
+
+/* ── the column: over the art it stands on the spotlight's text edge under the strip; with no art (a door the server's games
+   cannot reach) it stands alone in the middle ── */
+.au-main { position: relative; z-index: 2; flex: 1; display: grid; grid-template-columns: minmax(0, 560px); align-items: start; padding: clamp(0px, calc(14vh - 64px), 96px) var(--page-r) 48px var(--page-x); }
+.au:not(.has-fan) .au-main { grid-template-columns: minmax(0, 480px); align-items: center; justify-content: center; padding-top: 24px; padding-bottom: 64px; }
+.au-col { min-width: 0; }
+.au-col > :not(form), .au-form > * { animation: focus-in .7s var(--ease) backwards; }
+.au-col > :nth-child(2), .au-form > :nth-child(2) { animation-delay: .08s; }
+.au-col > :nth-child(3), .au-form > :nth-child(3) { animation-delay: .16s; }
+.au-col > :nth-child(4), .au-form > :nth-child(4) { animation-delay: .24s; }
+.au-col > :nth-child(n+5), .au-form > :nth-child(n+5) { animation-delay: .32s; }
+
+.au-brand { margin: 0; font: 800 104px/.92 var(--display); letter-spacing: -.035em; color: #fff; }
+.au-title { margin: 0; font: 800 40px/44px var(--display); letter-spacing: -.02em; color: var(--fg); text-wrap: balance; }
+.au-facts { margin: 20px 0 0; font-size: 17px; line-height: 24px; color: var(--fg-2); }
+.au-facts b { color: var(--fg); font-weight: 600; }
+.au-acts { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.au-note { padding: 0 8px; color: var(--fg-2); font-size: 15px; font-weight: 500; }
+
+/* ── the form: Settings' labels over 44 px pill fields ── */
+.au-form { display: block; margin: 0; }
+.au-fields { display: grid; gap: 20px; margin-top: 32px; }
+.au-field { display: grid; gap: 8px; min-width: 0; }
+.au-label { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 600; line-height: 20px; color: var(--fg); }
+.au-label i { font-style: normal; font-size: 13px; font-weight: 500; color: var(--fg-2); }
+.au-hint { font-size: 13px; line-height: 18px; color: var(--fg-2); }
+.au .tf.mono input { font-family: var(--mono); letter-spacing: .04em; }
+.au .tf.mono input::placeholder { font-family: var(--ui); letter-spacing: 0; }
+.au-said { display: flex; align-items: flex-start; gap: 8px; margin: 20px 0 0; font-size: 15px; font-weight: 500; line-height: 20px; color: var(--bad); }
+.au-said .ic { flex: none; margin-top: 2px; }
+.au-said.good { color: var(--fg); }
+
+/* ── the front page's facts, as Settings' rows, on the frosted glass the top bar's pills use over art ── */
+.au-table { margin: 36px 0 0; padding: 0 20px; border-radius: 20px; background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 0 0 1px var(--glass-line); }
+.au:not(.has-fan) .au-table { background: var(--surface-1); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1px var(--hair-1); }
+.au-row { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: center; gap: 16px; min-height: 60px; padding: 10px 0; }
+.au-row + .au-row { box-shadow: inset 0 1px 0 var(--hair-2); }
+.au-row dt { font-size: 15px; font-weight: 600; line-height: 20px; color: var(--fg); }
+.au-row dd { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; min-width: 0; margin: 0; font-size: 15px; font-weight: 500; line-height: 20px; color: var(--fg-2); }
+.au-addr { min-width: 0; overflow-wrap: anywhere; color: var(--fg); font-weight: 600; }
+.au-row .btn.quiet { margin-right: -12px; }
+
+.au-foot { position: relative; z-index: 2; flex: none; padding: 0 var(--page-r) 24px var(--page-x); color: var(--fg-2); font-size: 13px; line-height: 20px; }
+.au.has-fan .au-foot { display: none; }   /* the fan holds the bottom edge */
+
+/* a short window (the launcher's 640): the column tightens so the action stays on the first screen */
+@media (max-height: 760px) {
+  .au-main { padding-top: 0; padding-bottom: 24px; }
+  .au-title { font-size: 32px; line-height: 36px; }
+  .au-brand { font-size: 72px; }
+  .au-fields { gap: 12px; margin-top: 20px; }
+  .au-acts { margin-top: 20px; }
+  .au-table { margin-top: 24px; }
+  .au-foot { padding-bottom: 16px; }
+}
+@media (max-width: 559px) {
+  .au-brand { font-size: 64px; }
+  .au-title { font-size: 32px; line-height: 36px; }
+  .au-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .au-col > *, .au-form > * { animation: none; } }

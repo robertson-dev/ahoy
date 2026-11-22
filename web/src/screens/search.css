@@ -1,0 +1,71 @@
+/* Search (/search) and the Discover lists (/discover/list/:key): the screens' own styles, prefix sx-.
+   Language: M/disc/picked (section heads 24/28 with 20 px to the content, 204 × 304 cards 24 apart (six at 1440: the
+   page scrollbar lives in the right margin, ahoy.css --page-r), chart rows 60 tall 8 apart, chips) and M/lfs/settings (the 40/44 page title 36 px under the bar, fields, buttons). */
+
+.sx { padding: 28px var(--page-r) 120px var(--page-x); }
+.sx-list { padding-top: 36px; }
+
+/* ── the big field: the top bar's search pill made the page's own (#161616, .10 hairline, fully round) ── */
+.sx-find { display: block; margin: 0; }
+.sx-field { display: flex; align-items: center; gap: 14px; width: min(660px, 100%); height: 56px; padding: 0 8px 0 20px; border-radius: 28px; background: var(--surface-1); box-shadow: inset 0 0 0 1px var(--hair-3); color: var(--fg-2); cursor: text; transition: box-shadow .15s var(--ease); }
+.sx-field:hover { box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+.sx-field:focus-within { box-shadow: inset 0 0 0 1px rgba(255,255,255,.24); }
+.sx-field:has(input:focus-visible) { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.sx-field-ic { flex: none; }
+.sx-field input { flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; background: none; outline: none; color: var(--fg); font: 500 20px/28px var(--ui); }
+.sx-field input:focus-visible { outline: none; }
+.sx-field input::placeholder { color: var(--fg-2); }
+.sx-clear { flex: none; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 20px; background: none; color: var(--fg-2); transition: background .15s var(--ease), color .15s var(--ease); }
+.sx-clear:hover { background: var(--fill-quiet); color: var(--fg); }
+
+/* ── sections and walls ── */
+.sx-sec { margin-top: 48px; }
+.sx-sec + .sx-sec { margin-top: 72px; }
+.sx-wall { display: grid; grid-template-columns: repeat(auto-fill, 204px); column-gap: 24px; row-gap: 40px; margin: 20px 0 0; padding: 0; list-style: none; }
+.sx-body > .sx-wall { margin-top: 0; }
+.sx-wall > li { min-width: 0; animation: rise-in .35s var(--ease) backwards; }   /* backwards: nothing lingers once it is in */
+.sx-wait { min-width: 96px; color: var(--fg-2); pointer-events: none; }
+
+/* quiet states sit on the content edge, under what they replace */
+.sx .es { justify-items: start; padding: 56px 0 0; text-align: left; }
+.sx .es p { max-width: 52ch; }
+.sx .spinner-block { justify-items: start; padding: 56px 0 0; }
+.sx-list .es, .sx-list .spinner-block { padding-top: 16px; }
+.sx-list > .sx-body:first-child { margin-top: 0; }
+
+/* ── a list page: the title, the list's own switches, the list ── */
+.sx-head { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 32px; min-height: 44px; }
+.sx-title { margin: 0; font: 800 40px/44px var(--display); letter-spacing: -.02em; color: var(--fg); white-space: nowrap; }
+.sx-switch { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.sx-src { margin-left: 8px; color: var(--fg-2); font: 500 15px/20px var(--ui); }
+.sx-body { margin-top: 40px; }
+.sx-more { display: flex; justify-content: center; margin-top: 64px; }
+.sx-failed { display: flex; align-items: center; gap: 16px; color: var(--fg-2); font-size: 15px; font-weight: 500; }
+
+/* the chart: two columns, each page its own block read down then across */
+.sx-chart { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 25), 60px); grid-auto-flow: column; column-gap: 100px; row-gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sx-chart + .sx-chart { margin-top: 8px; }
+.sx-chart > .cr { min-width: 0; }
+
+/* the calendar of everything coming: bands of dates, 140 cards */
+.sx-cal .cal-band { padding-top: 16px; }
+.sx-cal .cal-band + .cal-band { margin-top: 40px; }
+
+/* ── the catalogue preview ── */
+.sx-pv { display: flex; gap: 20px; align-items: flex-start; }
+.sx-pv-art { position: relative; flex: none; width: 120px; aspect-ratio: 2 / 3; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
+.sx-pv-art::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--hair-2); pointer-events: none; }
+.sx-pv-art > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.sx-pv-tx { display: grid; gap: 10px; min-width: 0; }
+.sx-pv-facts { color: var(--fg); font-size: 15px; font-weight: 600; line-height: 20px; }
+.sx-pv-about { color: var(--fg-2); font-size: 15px; line-height: 22px; }
+
+/* ── narrower windows: walls keep their card size and wrap; the chart stacks ── */
+@media (max-width: 1099px) {
+  .sx-chart { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-flow: row; grid-auto-rows: 60px; }
+}
+@media (max-width: 559px) {
+  .sx-title { font-size: 32px; line-height: 36px; white-space: normal; }
+  .sx-pv { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) { .sx-wall > li { animation: none; } }

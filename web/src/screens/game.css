@@ -1,0 +1,108 @@
+/* The game (/game/:id) and Steam (/steam/:appId) pages. No board of their own: the head is built like the right pane of
+   M/lfs/library-split/Library-Split.dc.html (the Spotlight, the journey at 448, then the facts table and Lately in two 448
+   columns 32 apart), the rest in the language of the Discover and Library boards (section heads 24/28, 20 under them,
+   sections 96 apart, poster shelves, hairline lists). Class prefix gp-. */
+
+.gp { position: relative; padding-bottom: 96px; }
+/* the ground under the head's lower half (the Spotlight's `ground`: drawn over the art, under the text, inside the art's
+   box), so the journey, the facts and Lately always stand on the page:
+   (1) the board's art box (library-split: opaque to 440, gone by 700, its smoothstep stops) over the full width;
+   (2) under the journey and the two columns of facts and Lately, the page from 40 px under the actions (the rule only
+       weighs the art above them), fading out past the columns.
+   Both follow the bar like the stage does. */
+.gp-ground { position: absolute; inset: 0; pointer-events: none;
+  --y: calc(var(--bar-h) - 148px);
+  background: linear-gradient(180deg, rgba(16,16,16,0) calc(440px + var(--y)), rgba(16,16,16,.074) calc(483px + var(--y)), rgba(16,16,16,.259) calc(527px + var(--y)), rgba(16,16,16,.5) calc(570px + var(--y)), rgba(16,16,16,.741) calc(613px + var(--y)), rgba(16,16,16,.926) calc(657px + var(--y)), #101010 calc(700px + var(--y))); }
+.gp-ground::before { content: ""; position: absolute; left: 0; right: 0; top: calc(504px + var(--y)); bottom: 0;
+  background: linear-gradient(90deg, rgba(16,16,16,.88) 0, rgba(16,16,16,.88) calc(var(--page-x) + 952px), rgba(16,16,16,0) calc(var(--page-x) + 1192px));
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 40px); mask-image: linear-gradient(180deg, transparent 0, #000 40px); }
+
+.gp-journey { width: 448px; max-width: 100%; }
+/* on the art a quiet button's grey does not always read (the spotlight rule weighs the facts line and a Details pill, not what
+   stands past them: Hollow Knight's Uninstall measured 3.5:1), so in the head the quiet ones (Uninstall, the ask's Cancel)
+   take the page's white, still without a pill */
+.gp .spot-acts .btn.quiet { color: var(--fg); }
+
+/* loading, not on the server, no answer: one quiet block under the bar */
+.gp-hold { min-height: calc(100vh - var(--bar-h)); padding: 96px var(--page-r) 64px var(--page-x); }
+
+/* ── the facts table beside Lately (library-split: 448 + 32 + 448, 40 under the journey) ── */
+.gp-low { display: grid; grid-template-columns: 448px 448px; column-gap: 32px; row-gap: 40px; align-items: start; padding: 0 var(--page-r) 0 var(--page-x); }
+.gp-low > :only-child { grid-column: 1; }
+.gp-facts { margin: 0; min-width: 0; }
+.gp-fact { display: flex; align-items: center; min-height: 48px; padding: 12px 0; }
+.gp-fact + .gp-fact { box-shadow: inset 0 1px 0 var(--hair-2); }
+.gp-fact dt { width: 176px; flex: none; padding-right: 16px; font-size: 15px; font-weight: 500; line-height: 24px; color: var(--fg-2); }
+.gp-fact dd { display: flex; align-items: center; min-width: 0; margin: 0; font-size: 15px; font-weight: 600; line-height: 24px; color: var(--fg); }
+.gp-fact dd.quiet { color: var(--fg-2); font-weight: 500; }
+.gp-path { overflow-wrap: anywhere; }
+.gp-soft { color: var(--fg-2); font-weight: 500; }
+.gp-out { display: inline-flex; align-items: center; gap: 4px; color: var(--fg); transition: color .15s var(--ease); }
+.gp-out .ic { color: var(--fg-2); }
+.gp-out:hover { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+/* people in a fact: 24 px faces, 4 apart, then the names */
+.gp-ppl { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.gp-faces { display: flex; gap: 4px; flex: none; }
+.gp-faces a { display: flex; border-radius: 8px; }
+.gp-ppl-t { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Lately: the heading 17/600 on a 48 px row (level with the table's first row), lines of 44 sixteen apart */
+.gp-lately { min-width: 0; }
+.gp-lately h2 { display: flex; align-items: center; height: 48px; margin: 0; font: 600 17px/24px var(--ui); color: var(--fg); }
+.gp-lately ol { display: flex; flex-direction: column; gap: 16px; margin: 8px 0 0; padding: 0; list-style: none; }
+.gp-line { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; }
+.gp-line-av { display: block; flex: none; margin-top: 4px; border-radius: 10px; }
+.gp-line-tx { display: grid; min-width: 0; }
+.gp-line-s { font-size: 15px; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gp-line-s b { color: var(--fg); font-weight: 600; }
+.gp-line-s a:hover b { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+.gp-line-t { margin-top: 4px; font-size: 13px; font-weight: 500; line-height: 20px; color: var(--fg-2); }
+
+/* ── the sections under the head ── */
+.gp-body { padding: 0 var(--page-r) 0 var(--page-x); }
+.gp-sect { margin-top: 96px; }
+.gp-body.near > .gp-sect:first-child { margin-top: 32px; }  /* no facts under the head: the first section 72 under the actions (Discover's rhythm) */
+
+/* trailers and screenshots: 16:9 tiles, four across at 1440, wrapping to fewer below; where three fit across (936 to 1255 px
+   of room) six tiles make two whole rows instead of eight in three (the viewer still holds every one) */
+.gp-msect { container-type: inline-size; }
+.gp-media { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(296px, 100%), 1fr)); gap: 24px; margin: 20px 0 0; padding: 0; list-style: none; }
+@container (min-width: 936px) and (max-width: 1255.98px) { .gp-media > li:nth-child(n + 7) { display: none; } }
+.gp-shot { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; border: 0; border-radius: 16px; overflow: hidden; background: var(--surface-2); cursor: pointer; }
+.gp-shot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--hair-2); pointer-events: none; }
+.gp-shot img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; transition: filter .15s var(--ease); }
+.gp-shot:hover img { filter: brightness(1.08); }
+.gp-play { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; padding-left: 3px; border-radius: 50%; background: var(--glass-2); border: 1px solid var(--glass-line); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); color: var(--fg); transition: filter .15s var(--ease); }
+.gp-shot:hover .gp-play { filter: brightness(1.12); }
+
+/* about: the store's words in the 660 column (span 9), its facts in the last six columns (432) */
+.gp-about { display: grid; grid-template-columns: minmax(0, 660px) minmax(0, 432px); justify-content: space-between; column-gap: 48px; row-gap: 40px; margin-top: 20px; align-items: start; }
+.gp-about.solo { grid-template-columns: minmax(0, 448px); }
+.gp-prose { display: grid; gap: 12px; color: var(--fg-2); font-size: 15px; line-height: 24px; overflow-wrap: break-word; }
+.gp-store { margin-top: -12px; }  /* the first row's text sits level with the prose's first line */
+
+/* other ways to play: quiet rows with a hairline between, Open at the end */
+.gp-ways { max-width: 896px; margin: 20px 0 0; padding: 0; list-style: none; }
+.gp-way { display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 10px 0; }
+.gp-way + .gp-way { box-shadow: inset 0 1px 0 var(--hair-2); }
+.gp-way-t { display: grid; flex: 1; min-width: 0; }
+.gp-way-t b { font-size: 15px; font-weight: 600; line-height: 20px; color: var(--fg); }
+.gp-way-t small { margin-top: 4px; font-size: 13px; font-weight: 500; line-height: 20px; color: var(--fg-2); }
+
+/* more like this: a shelf of 204 posters that scrolls sideways past the margins */
+.gp-shelf { display: flex; gap: 24px; margin: 20px calc(-1 * var(--page-r)) 0 calc(-1 * var(--page-x)); padding: 0 var(--page-r) 8px var(--page-x); list-style: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-padding: 0 var(--page-r) 0 var(--page-x); }
+.gp-shelf > li { flex: none; }
+
+/* ── narrower windows: the two columns stack, the art keeps the full width ── */
+@media (max-width: 1099px) {
+  .gp-about { grid-template-columns: minmax(0, 660px); }
+  .gp-store { margin-top: 0; max-width: 448px; }
+}
+@media (max-width: 1019px) {
+  .gp-low { grid-template-columns: minmax(0, 448px); }
+}
+
+/* motion (ui/motion.ts): what follows the head comes into focus in reading order, as the game's details arrive */
+.gp-sect, .gp-lately { animation: focus-in var(--t-in) var(--ease) backwards; }
+.gp-sect:nth-of-type(2) { animation-delay: .06s; } .gp-sect:nth-of-type(3) { animation-delay: .12s; } .gp-sect:nth-of-type(n+4) { animation-delay: .18s; }
+@media (prefers-reduced-motion: reduce) { .gp-sect, .gp-lately { animation: none; } }

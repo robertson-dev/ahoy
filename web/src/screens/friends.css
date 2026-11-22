@@ -1,0 +1,112 @@
+/* Friends (/people) — board M/lfs/friends-now/Friends-Now.dc.html (generator gen.mjs beside it).
+   The page grid is the boards' 18 columns of 52 with 24 gutters inside --page-x. Also the pieces a profile shares
+   (friends-bits.tsx): key art, the presence dot, the one button for a friend's game. */
+
+.fr { padding: 24px var(--page-r) 96px var(--page-x); }                       /* the tiles at 172: the bar plus 24 */
+.fr > :not(.sr-only) { animation: rise-in .4s var(--ease) backwards; }    /* backwards: no transform lingers to trap fixed dialogs */
+.fr > .fr-cols { animation-delay: 60ms; }
+
+/* ── who is on: rows of tiles on 18 columns ── */
+.fr-on { display: grid; gap: 24px; margin-bottom: 96px; }
+.fr-tiles { display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); column-gap: 24px; height: 384px; margin: 0; padding: 0; list-style: none; }
+.fr-tiles.compact { height: 96px; }
+.fr-tile { position: relative; min-width: 0; border-radius: 20px; }
+.fr-tile::after { content: ""; position: absolute; inset: 0; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--hair-2); pointer-events: none; }
+.fr-tile.is-quiet::after { box-shadow: inset 0 0 0 1px var(--hair-5); }
+
+/* a playing tile: the key art under a scrim of the page colour that rises from the bottom to .9 behind the text */
+.fr-tile-art { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 20px; background: var(--surface-2); isolation: isolate; }
+.fr-tile-art::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(16,16,16,0) calc(100% - 216px), rgba(16,16,16,.12) calc(100% - 180px), rgba(16,16,16,.34) calc(100% - 144px), rgba(16,16,16,.6) calc(100% - 108px), rgba(16,16,16,.84) calc(100% - 72px), rgba(16,16,16,.9) calc(100% - 36px)); }
+a.fr-tile-art:hover .fr-ka-hero, a.fr-tile-art:hover .fr-ka-poster { transform: scale(1.015); }
+.fr-tile-foot { position: absolute; left: 24px; right: 24px; bottom: 24px; z-index: 2; display: flex; align-items: center; gap: 16px; height: 48px; pointer-events: none; }
+.fr-tile-foot > * { pointer-events: auto; }
+.fr-tile-who { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; height: 48px; border-radius: 15px; }
+.fr-tile-tx { display: block; flex: 1; min-width: 0; }
+.fr-tile-name { display: block; font: 800 24px/28px var(--display); letter-spacing: -.01em; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-tile-line { display: block; font-size: 15px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-tile-line b { color: var(--fg); font-weight: 600; }
+.fr-tile-line .fr-pdot { width: 8px; height: 8px; margin-right: 8px; vertical-align: 1px; }
+a.fr-tile-who:hover .fr-tile-name { text-decoration: underline; text-decoration-color: var(--hair-6); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+
+/* a friend who is only online: no art; the avatar large and neutral above the name, or beside it in a compact row */
+.fr-quiet { position: absolute; inset: 0; display: block; border-radius: 20px; background: var(--surface-3); transition: background .15s var(--ease); }   /* the board's #1e1e1e */
+.fr-quiet:hover { background: color-mix(in srgb, var(--surface-3), #fff 4%); }
+.fr-quiet-face { position: absolute; left: 0; right: 0; top: 0; bottom: 96px; display: grid; place-items: center; }
+.fr-quiet > .fr-tile-tx { position: absolute; left: 24px; right: 24px; bottom: 24px; height: 48px; }
+.fr-quiet.compact { display: flex; align-items: center; gap: 16px; padding: 0 24px; }
+.fr-quiet.compact > .fr-tile-tx { position: static; height: auto; }
+
+/* ── key art (friends-bits KeyArt): cover-cropped and centred; with no key art, the poster against the right edge ── */
+.fr-ka-hero { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; transition: transform .4s var(--ease); }
+.fr-ka-blur { position: absolute; inset: -24px; display: block; width: calc(100% + 48px); height: calc(100% + 48px); object-fit: cover; filter: blur(24px) brightness(.5); }
+.fr-ka-poster { position: absolute; right: 0; top: 0; display: block; height: 100%; width: auto; aspect-ratio: 2 / 3; object-fit: cover; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px); mask-image: linear-gradient(90deg, transparent 0, #000 48px); transition: transform .4s var(--ease); }
+
+/* the presence dot in a line (PresenceText) and the one button for a friend's game (MineButton) */
+.fr-pdot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; vertical-align: 2px; border-radius: 50%; background: var(--ok); }
+/* the boards' 116 px Play / Install: the glyph and label centred 2 px left of the middle (beats .btn.s48:has(> .ic:first-child));
+   Try again, with no glyph, centred. On a tile Play's glyph is 16 (Install keeps 18); the profile's now card draws both at 18. */
+.btn.fr-mine, .btn.s48.fr-mine:has(> .ic:first-child), .btn.s44.fr-mine:has(> .ic:first-child) { min-width: 116px; padding: 0 20px 0 16px; }
+.btn.fr-mine:not(:has(> .ic)) { padding: 0 16px; }
+.fr-tile .fr-mine-play > .ic { width: 16px; height: 16px; }
+
+/* ── two columns: people (columns 1-6) and Lately (8-18) ── */
+.fr-cols { display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); column-gap: 24px; align-items: start; }
+.fr-people { grid-column: 1 / span 6; min-width: 0; }
+.fr-lately { grid-column: 8 / span 11; min-width: 0; }
+.fr-find { width: 100%; }
+.fr-group { margin-top: 32px; }
+.fr-find + .fr-group { margin-top: 40px; }
+.fr-list { display: flex; flex-direction: column; gap: 16px; margin: 12px 0 0; padding: 0; list-style: none; }
+.fr-row { position: relative; z-index: 0; display: flex; align-items: center; gap: 16px; height: 44px; }
+.fr-row::before { content: ""; position: absolute; z-index: -1; inset: -8px; border-radius: 20px; background: var(--fill-quiet); opacity: 0; transition: opacity .15s var(--ease); pointer-events: none; }
+.fr-row:hover::before, .fr-row:focus-within::before { opacity: 1; }
+.fr-row-who { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; height: 44px; border-radius: 14px; }
+.fr-row-tx { display: block; min-width: 0; }
+.fr-row-name { display: block; font-size: 15px; font-weight: 600; line-height: 20px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-row-line { display: block; margin-top: 4px; font-size: 13px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-row-line b { color: var(--fg); font-weight: 600; }
+.fr-row .fb-pair, .fr-row > .btn { flex: none; }
+/* the board's friend buttons (gen.mjs friendButtons): fixed widths, the label centred, a glyph's button 3-4 px heavier on the right */
+.fr-people .fr-row .fb-pair > .btn:first-child { min-width: 104px; padding: 0 16px 0 12px; }                 /* Accept */
+.fr-people .fr-row .fb-pair > .btn:last-child { min-width: 96px; padding: 0 16px; }                          /* Decline */
+.fr-people .fr-row > .btn[aria-pressed="true"]:has(> .ic) { min-width: 96px; padding: 0 15px 0 12px; }       /* Friends ✓ */
+.fr-people .fr-row > .btn:not([aria-pressed]):has(> .ic) { min-width: 112px; padding: 0 15px 0 12px; }       /* Add friend */
+.fr-people .fr-row > .btn:not([aria-pressed]):not(:has(> .ic)) { min-width: 132px; padding: 0 12px; }        /* Asked · withdraw */
+.fr-wait { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-height: 44px; margin-top: 24px; }   /* both columns' waits on one line */
+.fr-none { margin: 0; font-size: 15px; line-height: 22px; color: var(--fg-2); }
+.fr-gap { margin-top: 24px; }
+
+/* ── Lately: the feed, 64 px lines ── */
+.fr-lately-head { height: 44px; }
+.fr-lately-head .sh-title { min-width: 76px; }
+.fr-lately-head .chip:first-child { min-width: 84px; }          /* the board's Friends | Everyone: 84 and 96 wide */
+.fr-lately-head .chip:last-child { min-width: 96px; }
+.fr-feed { display: flex; flex-direction: column; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+.fr-feed-row { display: flex; align-items: center; gap: 16px; height: 64px; }
+.fr-feed-av { display: block; flex: none; border-radius: 12px; }
+.fr-feed-slot { position: relative; display: grid; place-items: center; flex: none; width: 40px; height: 64px; border-radius: 8px; }
+.fr-feed-slot .pa { border-radius: 8px; }
+a.fr-feed-slot:hover .pa > img { filter: brightness(1.08); }
+.fr-feed-tx { flex: 1; min-width: 0; margin: 0; font-size: 15px; font-weight: 500; line-height: 24px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-feed-tx b { color: var(--fg); font-weight: 600; }
+.fr-feed-when { flex: none; width: 120px; font-size: 13px; font-weight: 500; line-height: 24px; color: var(--fg-2); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── narrower windows: the people column takes a column more, then the two stack ── */
+@media (max-width: 1279px) {
+  .fr-people { grid-column: 1 / span 7; }
+  .fr-lately { grid-column: 9 / span 10; }
+  .fr-feed-when { width: auto; }                                /* the sentence keeps the room the time does not need */
+}
+@media (max-width: 1079px) {
+  .fr-cols { display: block; }
+  .fr-people { max-width: 640px; }
+  .fr-lately { margin-top: 72px; }
+}
+@media (max-width: 720px) {
+  .fr-feed-when { width: auto; max-width: 96px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr > * { animation: none; }
+  .fr-ka-hero, .fr-ka-poster { transition: none; }
+}

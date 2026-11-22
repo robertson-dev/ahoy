@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ahoy — PS5 Edition</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#002169;
+  --panel:rgba(255,255,255,.10);
+  --panel-dim:rgba(255,255,255,.06);
+  --glass-b:rgba(255,255,255,.18);
+  --text:#ffffff;
+  --dim:rgba(255,255,255,.55);
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,"Segoe UI Variable","Segoe UI",Roboto,sans-serif;
+  background:
+    radial-gradient(1100px 520px at 12% -5%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(900px 700px at 92% 115%, rgba(64,156,255,.25), transparent 60%),
+    linear-gradient(180deg,#0a3ba8 0%, #002169 45%, #000c33 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;
+}
+.app{display:flex;flex-direction:column;height:100vh;padding:0 clamp(18px,4vw,64px);position:relative;z-index:1}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.o1{width:520px;height:520px;background:rgba(84,140,255,.28);top:-140px;left:-90px}
+.o2{width:640px;height:640px;background:rgba(0,120,212,.30);bottom:-260px;right:-160px}
+
+/* ===== top utility bar ===== */
+.util{display:flex;align-items:center;justify-content:space-between;padding:16px 6px 6px;font-size:12px;color:var(--dim);flex:none}
+.util .lft{display:flex;align-items:center;gap:14px}
+.util b{color:var(--text);font-weight:600}
+.sprite{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade80;display:inline-block}
+.ico-btn{width:30px;height:30px;border-radius:50%;border:none;background:var(--panel-dim);color:var(--text);
+  cursor:pointer;font-size:13px;display:grid;place-items:center;transition:.15s}
+.ico-btn:hover{background:var(--panel);transform:scale(1.08)}
+.util .right{display:flex;gap:9px;align-items:center}
+
+/* ===== quick-menu icon row ===== */
+.qmenu{display:flex;align-items:center;gap:26px;padding:8px 6px 2px;flex:none;font-size:13px}
+.qi{color:var(--dim);cursor:pointer;transition:.15s;padding-bottom:5px;border-bottom:2px solid transparent;white-space:nowrap}
+.qi:hover{color:var(--text)}
+.qi.on{color:var(--text);border-bottom-color:#fff}
+
+/* ===== hero stage ===== */
+.stage{flex:1.15;min-height:0;display:flex;align-items:center;gap:clamp(22px,4vw,58px);padding:20px 6px 8px}
+.hero-art{position:relative;flex:none;width:clamp(280px,34vw,460px);aspect-ratio:3/2;border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 90px rgba(0,10,60,.55);cursor:pointer;transition:transform .25s}
+.hero-art:hover{transform:scale(1.02)}
+.hero-art .bg{position:absolute;inset:0;transition:opacity .7s}
+.bg.a{background:radial-gradient(500px 300px at 70% 30%, rgba(255,225,168,.7), transparent 65%),linear-gradient(125deg,#402a10,#8a5a1a 45%,#e0a83c 100%)}
+.bg.b{background:radial-gradient(500px 300px at 65% 35%, rgba(190,225,255,.7), transparent 65%),linear-gradient(125deg,#122a4a,#2a5a9a 45%,#78b0e8 100%)}
+.bg.c{background:radial-gradient(500px 300px at 70% 30%, rgba(255,210,190,.65), transparent 65%),linear-gradient(125deg,#3a1030,#7a2a50 45%,#d86a90 100%)}
+.hero-art::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 60px rgba(0,0,20,.25)}
+.hero-art .htxt{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:56px;letter-spacing:.04em;
+  color:rgba(255,255,255,.9);text-shadow:0 4px 24px rgba(0,0,30,.4)}
+.hero-copy{max-width:560px}
+.overline{font-size:11px;letter-spacing:.32em;color:var(--dim);margin-bottom:10px}
+.overline s{opacity:.6;margin-left:8px}
+.game-logo{font-weight:800;letter-spacing:.1em;font-size:clamp(30px,3.6vw,48px);line-height:1.05;margin-bottom:14px;
+  text-shadow:0 6px 40px rgba(0,0,40,.5)}
+.game-desc{color:var(--dim);font-size:14px;line-height:1.65;margin-bottom:18px;max-width:440px}
+.game-desc b{color:#fff;font-weight:600}
+.meta-row{display:flex;gap:10px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.meta-chip{background:var(--panel-dim);border:1px solid var(--glass-b);border-radius:999px;padding:4px 12px;font-size:11px}
+.meta-chip.free{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.5);color:#86efac;font-weight:700}
+.meta-chip.gold{background:rgba(255,215,120,.15);border-color:rgba(255,215,120,.45);color:#fde68a}
+.cta-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn-primary{background:#fff;color:#00206b;border:none;border-radius:999px;padding:13px 34px;font:inherit;font-weight:700;
+  font-size:14.5px;cursor:pointer;transition:.18s;box-shadow:0 6px 30px rgba(255,255,255,.25)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,255,255,.4)}
+.btn-primary.inq{background:#4ade80;color:#05240f;box-shadow:none}
+.btn-secondary{background:var(--panel);border:1px solid var(--glass-b);color:var(--text);border-radius:999px;
+  padding:12px 26px;font:inherit;font-size:13.5px;cursor:pointer;transition:.15s}
+.btn-secondary:hover{background:rgba(255,255,255,.16)}
+
+/* ===== content rows ===== */
+.content{flex:none;padding:6px 6px 0}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.section-head h3{font-size:16px;font-weight:700;letter-spacing:.02em}
+.section-head span{font-size:11.5px;color:var(--dim)}
+.tile-row{display:flex;gap:clamp(14px,1.6vw,24px);overflow-x:auto;padding:6px 2px 14px;scrollbar-width:none}
+.tile-row::-webkit-scrollbar{display:none}
+.tile{position:relative;flex:none;border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .18s, box-shadow .18s}
+.tile:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(0,10,60,.5);z-index:2}
+.fill{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;letter-spacing:.03em}
+.tile-l{width:168px;height:168px}.tile-l .fill{font-size:40px}
+.tile-m{width:232px;height:130px}.tile-m .fill{font-size:32px}
+.r1{background:linear-gradient(140deg,#1a5fd0,#0a2a70)} .r2{background:linear-gradient(140deg,#0f9b6e,#05583a)}
+.r3{background:linear-gradient(140deg,#e0512e,#7a1c08)} .r4{background:linear-gradient(140deg,#9a6ae0,#4a2090)}
+.r5{background:linear-gradient(140deg,#e8b53c,#8a5f0a)} .r6{background:linear-gradient(142deg,#3a4a68,#101a30)}
+.r7{background:linear-gradient(140deg,#d8437e,#701a38)} .r8{background:linear-gradient(140deg,#2ec5b6,#0a6a60)}
+.r9{background:linear-gradient(140deg,#5a78f0,#1c2a90)}
+.fill span{color:rgba(255,255,255,.92);text-shadow:0 3px 18px rgba(0,0,30,.4)}
+.tile-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,30,.72))}
+.tile-name{position:absolute;left:12px;bottom:10px;right:10px;font-size:13px;font-weight:700;
+  text-shadow:0 2px 10px rgba(0,0,20,.8);z-index:2}
+.badge{position:absolute;top:10px;left:10px;z-index:3;font-size:9.5px;font-weight:800;letter-spacing:.1em;
+  padding:4px 9px;border-radius:6px;backdrop-filter:blur(6px)}
+.badge.free{background:rgba(74,222,128,.22);border:1px solid rgba(74,222,128,.55);color:#bbf7d0}
+.badge.dl{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff}
+.dlbar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(0,0,30,.4);z-index:3;border-radius:0 0 14px 14px;overflow:hidden}
+.dlbar i{display:block;height:100%;background:linear-gradient(90deg,#4ade80,#a7f3d0)}
+
+/* ===== deck chips ===== */
+.decks{flex:none;display:flex;gap:12px;padding:2px 6px 20px;overflow-x:auto;scrollbar-width:none}
+.decks::-webkit-scrollbar{display:none}
+.deck{flex:none;display:flex;align-items:center;gap:10px;background:var(--panel-dim);border:1px solid var(--glass-b);
+  border-radius:999px;padding:9px 18px 9px 10px;cursor:pointer;transition:.15s;font-size:13px}
+.deck:hover{background:var(--panel);transform:translateY(-2px)}
+.deck .di{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px}
+.deck b{font-weight:600}
+.deck small{color:var(--dim);font-size:11px}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:rgba(0,15,60,.85);
+  border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(16px);border-radius:14px;padding:14px 26px;
+  font-size:13.5px;opacity:0;transition:.3s;z-index:99;pointer-events:none;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast b{color:#86efac}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="app">
+
+  <div class="util">
+    <div class="lft">
+      <span>⚓ <b>AHOY</b></span>
+      <span><b>Explorer</b> · Sam's Rig</span>
+      <span id="clock">| 11:47 PM</span>
+    </div>
+    <div class="right">
+      <span style="display:flex;align-items:center;gap:6px"><span class="sprite"></span><span id="hdrNet">24.1 MB/s · 3 in transit</span></span>
+      <button class="ico-btn" title="Notifications">🔔</button>
+      <button class="ico-btn" title="Downloads" onclick="toast('<b>Silksong 38%</b> · DL2 64% · RDR2 paused')">⇣</button>
+      <button class="ico-btn" title="Profile">E</button>
+      <button class="ico-btn" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <div class="qmenu">
+    <div class="qi on">Explore</div>
+    <div class="qi">Game Library</div>
+    <div class="qi"> Cabinets</div>
+    <div class="qi">Crew</div>
+    <div class="qi">Indexers</div>
+  </div>
+
+  <div class="stage">
+    <div class="hero-art" onclick="heroNext()">
+      <div class="bg a" id="heroBg"></div>
+      <div class="htxt" id="heroTxt">ELDEN<br>RING</div>
+    </div>
+    <div class="hero-copy">
+      <div class="overline">COMMUNITY RELEASE <s>$59.99</s></div>
+      <div class="game-logo" id="heroLogo">ELDEN RING</div>
+      <div class="game-desc" id="heroDesc">FromSoftware's masterpiece, community-packaged and agent-prepared. <b id="seedNum">412</b> healthy seeds — installs in ~6 min on your connection, play tonight.</div>
+      <div class="meta-row" id="heroMeta">
+        <span class="meta-chip free">FREE — WAS $59.99</span>
+        <span class="meta-chip gold">⭐ 4.9 · 12.4K RATINGS</span>
+        <span class="meta-chip">RUNE PACK</span>
+        <span class="meta-chip">WIN 10/11</span>
+      </div>
+      <div class="cta-row">
+        <button class="btn-primary" id="heroBtn" onclick="heroGo()">Get It — Free</button>
+        <button class="btn-secondary" onclick="toast('Added to wishlist 🖤')">♡ Wishlist</button>
+        <button class="btn-secondary" onclick="toast('Maya &amp; Tom already have crew access')">👥 Share to Crew</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-head"><h3>JUMP BACK IN</h3><span>Recently installed · saves synced</span></div>
+    <div class="tile-row" id="jumpRow"></div>
+  </div>
+
+  <div class="content">
+    <div class="section-head"><h3>FRESH OFF THE BOAT</h3><span>New community releases · 34 today</span></div>
+    <div class="tile-row" id="freshRow"></div>
+  </div>
+
+  <div class="decks">
+    <div class="deck" onclick="toast('SWITCH deck opening — 318 cartridges indexed')"><span class="di" style="background:linear-gradient(135deg,#ff4554,#a01020)">▣</span><b>Switch</b><small>318 titles</small></div>
+    <div class="deck" onclick="toast('PS2 NIGHTS — 1,843 discs, 4× upscale on')"><span class="di" style="background:linear-gradient(135deg,#8fa3bf,#4a5a74)">▚</span><b>PS2 Nights</b><small>1,843 discs</small></div>
+    <div class="deck" onclick="toast('DOLPHIN bay — GC+Wii, HD texture packs live')"><span class="di" style="background:linear-gradient(135deg,#6a4dff,#2a1a90)">◈</span><b>GC · Wii</b><small>312 titles</small></div>
+    <div class="deck" onclick="toast('GBA ARCHIVE — 2,914 carts in one shelf')"><span class="di" style="background:linear-gradient(135deg,#3a7bd5,#1a3a80)">▦</span><b>GBA Archive</b><small>2,914 carts</small></div>
+    <div class="deck" onclick="toast('DREAMCAST ROOM — 198 GD-ROMs humming')"><span class="di" style="background:linear-gradient(135deg,#ff6b9d,#a01a40)">◍</span><b>Dreamcast</b><small>198 discs</small></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const FEATURES=[
+ {cls:"a",name:"ELDEN RING",ov:"COMMUNITY RELEASE",was:"$59.99",seeds:412,
+  desc:"FromSoftware's masterpiece, community-packaged and agent-prepared. <b>412</b> healthy seeds — installs in ~6 min, play tonight."},
+ {cls:"b",name:"DEATH STRANDING 2",ov:"DAY-ONE RELEASE",was:"$69.99",seeds:287,
+  desc:"Porter Rising, cracked day-one and patched. <b>287</b> seeds humming — DS-era iceberg visuals included."},
+ {cls:"c",name:"FINAL FANTASY VII REBIRTH",ov:"REPACK RELEASE",was:"$69.99",seeds:194,
+  desc:"Square Enix's epic, fully repacked to a lean install. <b>194</b> seeds and climbing fast."}
+];
+let fi=0;
+function heroNext(){
+  fi=(fi+1)%FEATURES.length; const f=FEATURES[fi];
+  const bg=document.getElementById('heroBg');
+  bg.style.opacity=0;
+  setTimeout(()=>{bg.className='bg '+f.cls;bg.style.opacity=1},260);
+  document.getElementById('heroTxt').innerHTML=f.name.split(' ').join('<br>');
+  document.getElementById('heroLogo').textContent=f.name;
+  document.querySelector('.overline').innerHTML=f.ov+' <s>'+f.was+'</s>';
+  document.getElementById('heroDesc').innerHTML=f.desc;
+  const m=document.getElementById('heroMeta');
+  m.innerHTML='<span class="meta-chip free">FREE — WAS '+f.was+'</span>'+
+    '<span class="meta-chip gold">⭐ '+(4.6+Math.random()*0.3).toFixed(1)+' RATINGS</span>'+
+    '<span class="meta-chip">'+(fi==0?'RUNE PACK':fi==1?'PARADOX PACK':'FITGIRL PACK')+'</span>'+
+    '<span class="meta-chip">WIN 10/11</span>';
+  const b=document.getElementById('heroBtn');b.className='btn-primary';b.textContent='Get It — Free';
+}
+function heroGo(){
+  const b=document.getElementById('heroBtn');
+  if(b.classList.contains('inq')){toast('<b>Already queued</b> — recipe running: 3/5 steps done');return}
+  b.classList.add('inq');b.textContent='✓ In Queue — recipe started';
+  toast('<b>'+FEATURES[fi].name+'</b> grabbed — magnet verified, installer agent engaged');
+}
+const JUMP=[
+ ["HO","Hollow Knight","c_free",100,"r1"],["HD","Hades II","",0,"r7"],
+ ["SV","Stardew Valley","c_coop",0,"r2"],["OU","Outer Wilds","",0,"r8"],["CE","Celeste","",0,"r4"]];
+const FRESH=[
+ ["BG","Baldur's Gate 3","FREE","r4"],["DS","Death Stranding 2","NEW","r9"],
+ ["FF","FF VII REBIRTH","FREE","r3"],["CW","Cyberpunk 2077","−33%","r6"],["PF","Palworld","FREE","r2"],["RD","Red Dead Redemption 2","DL 12%","r6"]];
+const hex=n=>"r"+n;
+function mkTile(ini,name,badge,cls,extra){
+  const dl=badge==="DL 12%"||badge==="DL 38%";
+  const pct=badge==="DL 38%"?38:badge==="DL 12%"?12:0;
+  return '<div class="tile tile-'+(cls===hex(6)?'m':'l')+'" onclick="toast(\'<b>'+name+'</b> · everything here is $0.00\')">'+
+   (badge?'<span class="badge '+(badge==="FREE"?'free':dl?'dl':'')+'">'+badge+'</span>':'')+
+   '<div class="fill '+cls+'"><span>'+ini+'</span></div><div class="tile-shade"></div>'+
+   (dl?'<div class="dlbar"><i style="width:'+pct+'%"></i></div>':'')+
+   '<div class="tile-name">'+name+'</div></div>';
+}
+document.getElementById('jumpRow').innerHTML=
+  mkTile("HO","Hollow Knight","100%","r1")+mkTile("HS","Hades II","","r7")+mkTile("SV","Stardew Valley","","r2")+
+  mkTile("OW","Outer Wilds","","r8")+mkTile("CE","Celeste","","r4")+mkTile("SP","Sekiro","","r3");
+document.getElementById('freshRow').innerHTML=
+  mkTile("BG","Baldur's Gate 3","FREE","r4")+mkTile("DS","Death Stranding 2","NEW","r9")+
+  mkTile("FF","FF VII REBIRTH","FREE","r3")+mkTile("CY","Cyberpunk 2077","FREE","r6")+
+  '<div class="tile tile-m" onclick="toast(\'Resume DL2?\')"><span class="badge dl">DL 64%</span><div class="fill r5"><span>DL2</span></div><div class="tile-shade"></div><div class="dlbar"><i style="width:64%"></i></div><div class="tile-name">Dying Light 2</div></div>'+
+  '<div class="tile tile-m" onclick="toast(\'Silksong grabs happily along\')"><span class="badge dl">DL 38%</span><div class="fill r9"><span>SKS</span></div><div class="tile-shade"></div><div class="dlbar"><i style="width:38%"></i></div><div class="tile-name">HK: Silksong</div></div>';
+
+function toast(html){
+  const t=document.getElementById('toast');
+  t.innerHTML=html;t.classList.add('show');
+  clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2800);
+}
+setInterval(()=>{
+  const d=new Date();
+  document.getElementById('clock').textContent="| "+d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+},1000);
+setInterval(()=>{const s=Math.floor(Math.random()*6)-2;
+  document.getElementById('hdrNet').textContent=(24+s*(Math.random())).toFixed(1)+" MB/s · 3 in transit";},1600);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')toast('Back to Explore — PS home vibes restored');
+  if(e.key==='Enter')toast('Focused item opened — press ESC to drift back');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+/* Discover (/discover): M/disc/picked/Discover.dc.html. The spotlight, cards, calendar and chart rows are the shared
+   components (ahoy.css, ui/spotlight.css); this file places them on the board's grid: sections 96 apart, shelves 20 under
+   their heads, the charts on 8 + 9 of the 18 columns, the genre menu on 2 and its rows on 16. Classes are dsc-*. */
+
+.dsc { position: relative; padding-bottom: 96px; }
+/* the spotlight's place while the pick is on its way (the same height, so nothing moves when it lands) */
+.dsc-hold { position: relative; display: grid; place-items: center; height: calc(608px + var(--bar-h) - 148px); }
+.dsc-body { padding: 0 var(--page-r) 0 var(--page-x); }
+.dsc-alone { padding: 28px var(--page-r) 96px var(--page-x); }
+.dsc-sec + .dsc-sec { margin-top: 96px; }
+.dsc-platforms.sx { padding-bottom: 24px; }
+.dsc > :is(.spot, .dsc-hold) + .dsc-platforms { padding-top: 0; }
+.dsc-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; }
+.dsc-filters:first-child { margin-top: 0; }
+.dsc-filters .tf { flex: 1 1 240px; max-width: 540px; min-width: 0; }
+.dsc-count { color: var(--fg-2); margin: 20px 0 16px; }
+.dsc-platform-pages { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; margin-top: 48px; color: var(--fg-2); }
+.dsc-platforms .sh, .sx-list > .sh { flex-wrap: wrap; }
+
+/* shelves: whole cards in one row (useFit), 24 apart, 20 under the head (16 under a genre's sub-head) */
+.dsc-row { display: flex; gap: 24px; margin: 20px 0 0; padding: 0; list-style: none; }
+.dsc-row > li { flex: none; min-width: 0; }
+.dsc-row.sm { margin-top: 16px; }
+
+/* Coming soon: the calendar's band starts 20 under the head (its dates 36 lower, as on the board) */
+.dsc-cal { margin-top: 20px; }
+
+/* Top sellers (8 columns) | a column of air | Highest rated (9 columns); the heads are the chips' 36 tall */
+.dsc-charts { display: grid; grid-template-columns: minmax(0, 584fr) minmax(0, 660fr); column-gap: 100px; align-items: start; }
+.dsc-charts.solo { grid-template-columns: minmax(0, 660px); }
+.dsc-chart { min-width: 0; container-type: inline-size; }
+.dsc-chart > .sh { min-height: 36px; }
+.dsc-chart .cr-list { margin-top: 20px; }
+.dsc-best { display: flow-root; min-height: 692px; }      /* 20 + ten rows: switching lists does not move the page */
+.dsc-best > .es { padding: 48px 24px; }
+.dsc-pick { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dsc-mc { margin-left: 8px; font: 500 13px/28px var(--ui); color: var(--fg-2); white-space: nowrap; }
+.dsc-more { display: flex; padding: 16px 0 0 48px; }
+@container (max-width: 600px) { .dsc-mc { display: none; } }
+
+/* Browse by genre: the menu (2 columns) beside the open genre's two rows (16 columns) */
+.dsc-genres-in { display: flex; gap: 24px; margin-top: 24px; }
+.dsc-gmenu { display: flex; flex-direction: column; gap: 4px; width: 128px; flex: none; margin: 0; padding: 0; list-style: none; }
+.dsc-gbtn { display: flex; align-items: center; width: 100%; height: 36px; padding: 0 16px; border: 0; border-radius: 18px; background: transparent; color: var(--fg-2); font: 600 15px/1 var(--ui); white-space: nowrap; transition: background .15s var(--ease), color .15s var(--ease); }
+.dsc-gbtn:hover { color: var(--fg); background: var(--fill-quiet); }
+.dsc-gbtn[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.dsc-grows { display: flex; flex-direction: column; gap: 40px; flex: 1; min-width: 0; min-height: 600px; }
+.dsc-grows > .es, .dsc-grows > .spinner-block { flex: 1; align-content: center; }
+
+/* under 1280 the two charts stack; in a narrow window the genre menu becomes a row of chips over its rows */
+@media (max-width: 1279px) {
+  .dsc-charts, .dsc-charts.solo { grid-template-columns: minmax(0, 1fr); row-gap: 96px; }
+}
+@media (max-width: 899px) {
+  .dsc-genres-in { flex-direction: column; }
+  .dsc-gmenu { flex-direction: row; flex-wrap: wrap; width: auto; }
+  .dsc-gbtn { width: auto; }
+  .dsc-grows { min-height: 0; }
+}
+
+/* motion (ui/motion.ts): each shelf comes into focus as it arrives (the store's feeds land a moment apart); the charts pair up */
+.dsc-sec, .dsc-chart { animation: focus-in var(--t-in) var(--ease) backwards; }
+.dsc-chart + .dsc-chart { animation-delay: .06s; }
+@media (prefers-reduced-motion: reduce) { .dsc-sec, .dsc-chart { animation: none; } }

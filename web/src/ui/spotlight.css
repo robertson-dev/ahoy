@@ -1,0 +1,25 @@
+/* ── the automatic spotlight (ui/spotlight.tsx with source=…): drawn exactly as the server's rule lays it out
+      (contracts/spotlight.md); the manual one's classes are in ahoy.css (.spot*) ── */
+.spot-auto .spot-art > img.spot-a-img { position: absolute; display: block; max-width: none; object-fit: fill; }
+.spot-a-layer { position: absolute; inset: 0; z-index: -1; }   /* its own stacking context under what follows the Spotlight, fading or not */
+/* a change of game is a focus pull: the art going out blurs and opens up over the new one, which sharpens underneath it
+   (no fade of its own, so the change never dips to dark); a stage's first art arrives out of focus */
+.spot-a-layer.leaving { animation: spot-a-out .6s var(--ease) forwards; pointer-events: none; }
+.spot-a-layer.focusing { animation: spot-a-focus .6s var(--ease) backwards; }
+.spot-a-layer.spot-a-fresh { animation: spot-a-arrive .8s var(--ease) backwards; }
+.spot-a-layer.holding { pointer-events: none; }   /* the art a game change leaves, kept up until the new art has decoded */
+@keyframes spot-a-out { to { opacity: 0; filter: blur(24px); transform: scale(1.04); } }
+@keyframes spot-a-focus { from { filter: blur(18px); transform: scale(1.03); } }
+@keyframes spot-a-arrive { from { opacity: 0; filter: blur(24px); transform: scale(1.04); } }
+.spot-a-stage { position: absolute; left: var(--page-x); width: min(660px, calc(100% - var(--page-x) - var(--page-r))); }
+.spot-a-id { position: absolute; left: 0; bottom: 100%; margin: 0; }
+.spot-a-id.logo > span { position: absolute; top: 0; display: block; overflow: hidden; }
+.spot-a-id.logo img { position: absolute; display: block; max-width: none; }
+.spot-a-id.title { font-family: var(--display); font-weight: 800; color: #f2f2f2; white-space: nowrap; }
+/* the text block comes into focus line by line: the name, the facts, the actions */
+.spot-a-stage.spot-a-fresh > * { animation: spot-a-in .55s var(--ease) backwards; }
+.spot-a-stage.spot-a-fresh > :nth-child(2) { animation-delay: .07s; }
+.spot-a-stage.spot-a-fresh > :nth-child(3) { animation-delay: .14s; }
+.spot-a-stage.spot-a-fresh > :nth-child(4) { animation-delay: .21s; }
+@keyframes spot-a-in { from { opacity: 0; filter: blur(10px); transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .spot-a-layer.leaving { animation-duration: .01s; } .spot-a-layer.focusing, .spot-a-layer.spot-a-fresh, .spot-a-stage.spot-a-fresh > * { animation: none; } }

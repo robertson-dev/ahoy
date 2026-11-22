@@ -1,0 +1,139 @@
+/*
+ * Settings (/settings) — M/lfs/settings/Settings.dc.html. The title and the index on the page margin (48..176 at 1440),
+ * one column of panels 888 wide (276..1164 at 1440, centred under the anchor on wider windows), rows of 76 with the label
+ * in a 180 px column, values from 204 into the panel, actions flush right. Below 1200 the index folds into a row of chips
+ * above the column; in a column under 720 the rows put their label on top.
+ */
+.st { display: flex; align-items: stretch; padding: 36px var(--page-r) 96px var(--page-x); --st-stick: 104px; }  /* the title at bar + 36 (184) */
+.st-side { width: 128px; flex: none; }
+.st-title { margin: 0; font: 800 40px/44px var(--display); letter-spacing: -.02em; color: var(--fg); white-space: nowrap; }
+
+/* ── the index: centred on the first row (264 at 1440), held 32 under the condensed bar ── */
+.st-index { position: sticky; top: var(--st-stick); margin-top: 36px; }
+.st-index ul { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.st-index a { display: flex; align-items: center; height: 36px; padding: 0 16px; border-radius: 18px; color: var(--fg-2); font: 600 15px/1 var(--ui); white-space: nowrap; transition: color .15s var(--ease), background-color .15s var(--ease); }
+.st-index a:hover { color: var(--fg); }
+.st-index a[aria-current="true"] { background: var(--fg); color: var(--bg); }
+.st-index-rule { height: 24px; background: linear-gradient(var(--hair-3), var(--hair-3)) 16px 11px / calc(100% - 32px) 1px no-repeat; }
+
+/* ── the column: the first heading level with the title (196), sections 64 apart, the admin ones under a rule 60 + 60 ── */
+.st-main { flex: 0 1 888px; min-width: 0; margin: 12px 0 0 max(100px, calc(50% - 572px)); container: st / inline-size; }
+.st-sec { scroll-margin-top: var(--st-stick); }
+.st-sec + .st-sec { margin-top: 64px; }
+.st-rule { height: 1px; margin: 60px 0 63px; border: 0; background: var(--hair-3); }
+.st-head { height: 28px; }
+.st-head .sh-title:focus { outline: none; }  /* where a jump from the index puts the focus (not a control): the scroll and the lit entry show it */
+.st-panel { margin-top: 20px; padding: 0 24px; border-radius: 20px; background: var(--surface-1); box-shadow: inset 0 0 0 1px var(--hair-1); --av-ring: var(--surface-1); }
+
+/* ── rows ── */
+.st-row { display: flex; align-items: center; min-height: 76px; }
+.st-row + .st-row { box-shadow: inset 0 1px 0 var(--hair-1); }
+.st-label { width: 180px; flex: none; margin-right: 24px; font: 600 15px/20px var(--ui); color: var(--fg); }
+.st-row-top .st-label { align-self: flex-start; margin-top: 16px; }
+.st-body { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; }
+.st-acts { display: flex; align-items: center; gap: 8px; flex: none; margin-left: 24px; }
+.st-wait { justify-content: center; gap: 16px; }
+.st-empty > .st-label { display: none; }
+
+/* the board's buttons: 36 tall at 14/600; a quiet one at the end keeps its words flush with the panel's inner edge */
+.st .btn.st-flush { margin-right: -16px; }
+
+/* ── text ── */
+.st-v { min-width: 0; font: 500 15px/20px var(--ui); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-two { display: block; min-width: 0; }
+.st-two > span { display: block; }
+.st-name { font: 600 15px/20px var(--ui); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-sub { margin-top: 4px; font: 500 13px/20px var(--ui); color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-unit { font: 500 15px/20px var(--ui); color: var(--fg-2); white-space: nowrap; }
+.st-grow { flex: 1; min-width: 0; }
+.st .st-grey { color: var(--fg-2); }
+.st .st-strong { color: var(--fg); font-weight: 600; }
+.st .st-bad { color: var(--bad); }
+a.st-strong:hover { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+
+/* ── fields: the dark wells (ui/controls TextField well) at the board's widths ── */
+.st-w88 { width: 88px; flex: none; }
+.st-w240 { width: 240px; flex: 0 1 240px; min-width: 120px; }
+.st-w320 { width: 320px; flex: 0 1 320px; min-width: 120px; }
+.st-w360 { width: 360px; flex: 0 1 360px; min-width: 160px; }
+.st .tf:has(input:disabled) { opacity: .55; cursor: default; }
+.st input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.st input[type=number]::-webkit-inner-spin-button, .st input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── chips that pick one (New accounts, Log level) ── */
+.st-radios { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.st-radios .chip[disabled] { opacity: .55; cursor: default; }
+
+/* ── the colour: a 320 track of every hue the avatar can take, 12 tall; the thumb 20 with a ring of the panel ── */
+.st-hue { position: relative; display: block; width: 320px; height: 44px; margin-left: 4px; flex: 0 1 320px; min-width: 160px; }
+.st-hue input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; background: none; }
+.st-hue input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; }
+.st-hue input:focus-visible { outline: none; }
+.st-hue-track { position: absolute; left: 0; right: 0; top: 16px; height: 12px; border-radius: 6px; pointer-events: none; }
+.st-hue-thumb { position: absolute; top: 12px; width: 20px; height: 20px; border-radius: 50%; background: var(--fg); box-shadow: 0 0 0 3px var(--surface-1); pointer-events: none; }
+.st-hue input:focus-visible ~ .st-hue-thumb { outline: 2px solid var(--lamp); outline-offset: 2px; }
+
+/* ── short lists inside a row (Signed in on, Invite codes): 16 + 44 a line + 16 ── */
+.st-list { align-items: flex-start; padding: 16px 0; }
+.st-list > .st-label { margin-top: 12px; }
+.st-lines { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.st-line { display: flex; align-items: center; min-height: 44px; }
+.st-line-end { min-height: 52px; align-items: flex-end; }
+.st-device { width: 200px; flex: none; padding-right: 12px; font: 600 15px/20px var(--ui); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-code { width: 120px; flex: none; font: 600 15px/20px var(--ui); letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--fg); white-space: nowrap; }
+
+/* ── On this PC: art 40 × 60, the name and size · version, the folder, Open folder and Uninstall ── */
+.st-gwho { display: flex; align-items: center; gap: 16px; flex: 0 1 336px; min-width: 0; height: 60px; border-radius: 8px; }
+.st-gwho .pa { flex: none; }
+a.st-gwho:hover .st-name, a.st-who:hover .st-name { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+.st-gpath { flex: 1; min-width: 0; margin-left: 24px; font: 500 13px/20px var(--ui); color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color .15s var(--ease); }
+.st .st-gpath.st-bright { color: var(--fg); }
+
+/* ── People: avatar 44, name and role, joined, presence, the role button and Remove ── */
+.st-person > .avatar { flex: none; }
+.st-who { display: block; width: 120px; flex: none; min-width: 0; margin: 0 24px 0 16px; }
+.st-who > span { display: block; }
+.st-joined { width: 160px; flex: none; padding-right: 12px; font: 500 15px/20px var(--ui); color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-presence { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.st-dot { width: 12px; height: 12px; flex: none; box-sizing: border-box; border: 2px solid transparent; border-radius: 50%; background: transparent; background-clip: content-box; }
+.st-dot.st-on { background-color: var(--ok); }
+
+/* ── the engine's Test / Save result ── */
+.st-result { display: inline-flex; align-items: center; gap: 6px; min-width: 0; margin-left: 8px; font: 500 15px/20px var(--ui); color: var(--fg); }
+.st-result > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── narrower windows: the index becomes a row of chips over the column, held under the condensed bar ── */
+@media (max-width: 1199px) {
+  .st { display: block; --st-stick: 156px; }  /* 72 bar + 60 chips + 24 */
+  .st-side { display: contents; }
+  .st-index { top: 72px; z-index: 5; margin: 20px calc(-1 * var(--page-r)) 0 calc(-1 * var(--page-x)); padding: 12px var(--page-r) 12px var(--page-x); background: rgba(16,16,16,.92); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+  .st-index ul { flex-direction: row; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .st-index ul::-webkit-scrollbar { display: none; }
+  .st-index li { flex: none; }
+  .st-index a { border: 1px solid var(--hair-4); }
+  .st-index a:hover { border-color: var(--hair-6); }
+  .st-index a[aria-current="true"] { border-color: var(--fg); }
+  .st-index-rule { width: 1px; height: 24px; margin: 0 8px; background: var(--hair-3); }
+  .st-main { max-width: 888px; margin: 16px 0 0; }
+}
+
+/* ── a narrow column (a phone's browser): labels over their values, long rows wrap ── */
+@container st (max-width: 719px) {
+  .st-panel { padding: 0 16px; }
+  .st-row { flex-wrap: wrap; column-gap: 12px; min-height: 0; padding: 14px 0; }
+  .st-row > .st-label, .st-list > .st-label, .st-row-top > .st-label { width: 100%; margin: 0 0 8px; align-self: auto; }
+  .st-row > .st-label:empty { display: none; }
+  .st-body { flex: 1 1 240px; flex-wrap: wrap; }
+  .st-acts { margin-left: auto; }
+  .st-line { flex-wrap: wrap; gap: 4px 12px; }
+  .st-device { width: auto; max-width: 100%; }
+  .st-gwho { flex: 1 1 200px; }
+  .st-gpath { order: 3; flex: 1 1 100%; margin: 8px 0 0 56px; }
+  .st-person { display: grid; grid-template-columns: 44px auto 1fr auto; grid-template-areas: "av who who acts" "av joined pres pres"; gap: 4px 16px; }
+  .st-person > .avatar { grid-area: av; align-self: start; }
+  .st-who { grid-area: who; width: auto; margin: 0; }
+  .st-joined { grid-area: joined; width: auto; padding: 0; }
+  .st-presence { grid-area: pres; }
+  .st-person > .st-acts { grid-area: acts; margin: 0; }
+  .st-hue { flex: 1 1 160px; width: auto; }
+}

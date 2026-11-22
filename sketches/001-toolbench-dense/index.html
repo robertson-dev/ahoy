@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ahoy — Toolbench (dense power-user)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1318;--panel:#151b22;--panel2:#10161d;--border:#222b35;
+  --text:#dde4ee;--dim:#78838f;--green:#46d160;--amber:#f0b429;--red:#ff6b6b;
+  --accent:#e05d38;
+}
+html,body{height:100%}
+body{font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* topbar */
+.top{display:flex;align-items:center;gap:14px;padding:0 16px;height:52px;border-bottom:1px solid var(--border);background:var(--panel2);flex:none}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.02em}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;font-size:14px}
+.kbd{font-family:"JetBrains Mono",monospace;font-size:10px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:2px 6px;color:var(--dim);background:var(--bg)}
+.cmdwrap{flex:1;max-width:720px;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 12px;transition:.15s}
+.cmdwrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(224,93,56,.15)}
+.cmdwrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font:inherit;font-size:13px}
+.topstats{margin-left:auto;display:flex;gap:18px;font-size:11.5px;color:var(--dim)}
+.topstats b{color:var(--text)}
+.netdot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 8px var(--green)}
+
+.body{display:flex;flex:1;min-height:0}
+
+/* sidenav */
+.nav{width:190px;flex:none;border-right:1px solid var(--border);background:var(--panel2);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav h5{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:10px 10px 6px}
+.nitem{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:13px;color:var(--dim);cursor:pointer;border:none;background:none;font-family:inherit;text-align:left;width:100%}
+.nitem:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nitem.on{color:var(--text);background:rgba(224,93,56,.12)}
+.nitem.on::before{content:"";width:3px;height:16px;border-radius:2px;background:var(--accent);position:absolute;margin-left:-10px}
+.nitem{position:relative}
+.count{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--dim)}
+.count.g{color:var(--green)} .count.a{color:var(--amber)}
+
+/* list */
+.listpane{flex:1;display:flex;flex-direction:column;min-width:0}
+.cols{display:grid;grid-template-columns:1fr 110px 90px 130px 96px;gap:12px;padding:8px 18px;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border);background:var(--panel2)}
+.rows{flex:1;overflow-y:auto}
+.row{display:grid;grid-template-columns:1fr 110px 90px 130px 96px;gap:12px;align-items:center;
+  padding:10px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.row:hover{background:rgba(255,255,255,.03)}
+.row.sel{background:rgba(224,93,56,.09);box-shadow:inset 3px 0 0 var(--accent)}
+.gname{display:flex;align-items:center;gap:11px;min-width:0}
+.swatch{width:30px;height:30px;border-radius:7px;flex:none;display:grid;place-items:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.9)}
+.gname div{min-width:0}
+.gname b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gname small{display:block;font-size:10.5px;color:var(--dim)}
+.src{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim)}
+.size,.eta{font-family:"JetBrains Mono",monospace;font-size:11.5px}
+.status{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600}
+.s-inst{color:var(--green)} .s-grab{color:var(--amber)} .s-q{color:var(--dim)} .s-pause{color:var(--red)}
+.blink{width:7px;height:7px;border-radius:50%;background:currentColor;animation:bl 1.4s infinite}
+@keyframes bl{50%{opacity:.3}}
+.act{display:flex;gap:6px;justify-content:flex-end}
+.iact{background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);cursor:pointer;
+  font-size:11px;padding:4px 8px;font-family:inherit}
+.iact:hover{color:var(--text);border-color:var(--dim)}
+.empty{padding:60px;text-align:center;color:var(--dim);font-size:13px}
+
+/* detail */
+.detail{width:330px;flex:none;border-left:1px solid var(--border);background:var(--panel2);overflow-y:auto}
+.d-cover{height:170px;display:grid;place-items:center;font-size:44px;font-weight:800;color:rgba(255,255,255,.9);position:relative}
+.d-price{position:absolute;bottom:10px;left:12px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  background:rgba(0,0,0,.55);padding:4px 9px;border-radius:5px;color:#8ef0a5;backdrop-filter:blur(4px)}
+.d-body{padding:16px}
+.d-body h2{font-size:16px}
+.d-body .sub{font-size:11.5px;color:var(--dim);margin:4px 0 14px;line-height:1.5}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.meta{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 10px}
+.meta small{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.meta b{font-family:"JetBrains Mono",monospace;font-size:12px}
+.recipe{border:1px solid var(--border);border-radius:9px;padding:12px;background:var(--bg);margin-bottom:16px}
+.recipe h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.step{display:flex;gap:9px;font-size:12px;color:var(--dim);padding:4.5px 0;align-items:flex-start}
+.step .tick{font-family:"JetBrains Mono",monospace;color:var(--green);flex:none}
+.step.pending .tick{color:var(--dim)}
+.step.active{color:var(--text)} .step.active .tick{color:var(--amber)}
+.btnrow{display:flex;gap:8px}
+.bigbtn{flex:1;border:none;border-radius:8px;padding:11px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#fff}
+.primary:hover{filter:brightness(1.1)}
+.sec2{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+
+/* downloads dock */
+.dock{flex:none;border-top:1px solid var(--border);background:var(--panel)}
+.dock-head{display:flex;align-items:center;gap:10px;padding:7px 16px;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+.dock-head .spd{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--green);text-transform:none;letter-spacing:0}
+.dl{display:grid;grid-template-columns:230px 1fr 150px 90px;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border)}
+.dl:last-child{border-bottom:none}
+.dl .n{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl .n small{display:block;font-weight:400;color:var(--dim);font-size:10.5px}
+.bar{height:6px;border-radius:3px;background:var(--bg);border:1px solid var(--border);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffb347);border-radius:3px;transition:width .5s linear}
+.bar.paused i{background:var(--dim)}
+.dl .st{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim)}
+.dl .st b{color:var(--amber)}
+.dlbtns{display:flex;gap:5px;justify-content:flex-end}
+.mini{background:none;border:1px solid var(--border);border-radius:5px;color:var(--dim);cursor:pointer;font-size:10.5px;padding:3px 8px;font-family:inherit}
+.mini:hover{color:var(--text)}
+::-webkit-scrollbar{width:9px} ::-webkit-scrollbar-thumb{background:#242e39;border-radius:5px;border:2px solid var(--bg)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="mark">⚓</span>ahoy</div>
+  <div class="cmdwrap" onclick="this.querySelector('input').focus()">
+    <span style="color:var(--dim);font-size:12px">⌕</span>
+    <input id="q" placeholder="Search 1,204 games · press " style="font-size:12.5px">
+    <span class="kbd">CTRL K</span>
+  </div>
+  <div class="topstats mono">
+    <span><span class="netdot"></span> VPN&nbsp;<b>ON</b> · NL-04</span>
+    <span>Prowlarr&nbsp;<b>38 indexers</b></span>
+    <span>↓&nbsp;<b id="speed">24.1 MB/s</b></span>
+    <span>disk&nbsp;<b>2.4 TB</b></span>
+  </div>
+</header>
+
+<div class="body">
+  <nav class="nav" id="nav">
+    <h5>Ship</h5>
+    <button class="nitem on" data-f="all">⛅ All games <span class="count">1,204</span></button>
+    <button class="nitem" data-f="Installed">▤ Installed <span class="count g">218</span></button>
+    <button class="nitem" data-f="grabbing">↡ Grabbing <span class="count a">3</span></button>
+    <button class="nitem" data-f="Queued">≡ Queue <span class="count">41</span></button>
+    <h5>Cabinets</h5>
+    <button class="nitem" data-f="_consoles">👾 Consoles & ROMs <span class="count">6.2k</span></button>
+    <h5>Crew</h5>
+    <button class="nitem" data-f="_shared">👥 Shared with crew <span class="count">12</span></button>
+    <h5>Rig</h5>
+    <button class="nitem" data-f="_src">📡 Indexers</button>
+    <button class="nitem" data-f="#">⚙ Setup & agent rules</button>
+  </nav>
+
+  <section class="listpane">
+    <div class="cols"><span>Game</span><span>Source</span><span>Size</span><span>Status</span><span style="text-align:right">Actions</span></div>
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <aside class="detail" id="detail"></aside>
+</div>
+
+<footer class="dock">
+  <div class="dock-head">↓ Download manifest — 3 active <span class="spd" id="dockSpd">Σ 24.1 MB/s · ETA 00:43:17</span></div>
+  <div id="dockItems"></div>
+</footer>
+
+<script>
+const GAMES=[
+ {n:"Elden Ring",d:"FromSoftware · Soulslike · repack by RUNE",src:"1337x",sz:"62.1 GB",st:"Installed",seed:412,c:"c4"},
+ {n:"Baldur's Gate 3",d:"Larian · GOTY edition · pre-patched",src:"RuTracker",sz:"118 GB",st:"Installed",seed:880,c:"c5"},
+ {n:"Dying Light 2",d:"Techland · Next-Gen update included",src:"IPTorrents",sz:"71.9 GB",st:"Grabbing",seed:233,c:"c3"},
+ {n:"Hollow Knight: Silksong",d:"Team Cherry · v1.0 day-one",src:"TorrentLeech",sz:"9.4 GB",st:"Grabbing",seed:1902,c:"c1"},
+ {n:"Factorio",d:"Wube · Space Age DLC bundled",src:"1337x",sz:"3.1 GB",st:"Queued",seed:96,c:"c6"},
+ {n:"Disco Elysium — Final Cut",d:"ZA/UM · full VO",src:"1337x",sz:"22 GB",st:"Installed",seed:120,c:"c2"},
+ {n:"Subnautica + Below Zero",d:"Unknown Worlds · duology",src:"TPB",sz:"15 GB",st:"Queued",seed:64,c:"c10"},
+ {n:"Red Dead Redemption 2",d:"Rockstar · repack by DODI",src:"IPTorrents",sz:"116 GB",st:"Paused",seed:89,c:"c8"},
+ {n:"Outer Wilds (incl. DLC)",d:"Mobius · Echoes of the Eye",src:"TorrentLeech",sz:"12 GB",st:"Installed",seed:151,c:"c7"},
+ {n:"Sekiro: Shadows Die Twice",d:"Activision · GOTY",src:"1337x",sz:"25 GB",st:"Installed",seed:310,c:"c9"},
+ {n:"Celeste",d:"Maddy Makes Games",src:"TPB",sz:"1.2 GB",st:"Installed",seed:77,c:"c5"},
+ {n:"Hades II",d:"Supergiant · Early Access latest",src:"RuTracker",sz:"12 GB",st:"Queued",seed:288,c:"c2"}
+];
+const state={filter:"all",sel:null};
+const sw={c1:"#2563eb",c2:"#e11d48",c3:"#059669",c4:"#ca8a04",c5:"#7c3aed",c6:"#ea580c",c7:"#14b8a6",c8:"#64748b",c9:"#dc2626",c10:"#0891b2"};
+
+function filt(){
+  let arr=GAMES.filter(g=>{
+    if(state.filter=="all")return true;
+    if(state.filter=="grabbing")return g.st=="Grabbing";
+    if(state.filter=="Installed")return g.st=="Installed";
+    if(state.filter=="Queued")return g.st=="Queued";
+    return true;
+  });
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  if(q)arr=arr.filter(g=>g.n.toLowerCase().includes(q)||g.src.toLowerCase().includes(q));
+  return arr;
+}
+function renderRows(){
+  const el=document.getElementById('rows');
+  if(state.filter=="_consoles"){el.innerHTML=consolePane();return}
+  if(state.filter=="_shared"){el.innerHTML=crewPane();return}
+  if(state.filter=="_src"){el.innerHTML=indexerPane();return}
+  const arr=filt();
+  if(!arr.length){el.innerHTML='<div class="empty">No bounty matches. Try fewer letters, mate.</div>';return}
+  el.innerHTML=arr.map(g=>{
+    const ic=g.st=="Installed"?'<span class="status s-inst">● Installed</span>'
+      :g.st=="Grabbing"?'<span class="status s-grab"><span class="blink"></span>Grabbing</span>'
+      :g.st=="Paused"?'<span class="status s-pause">‖ Paused</span>'
+      :'<span class="status s-q">◔ Queued</span>';
+    const acts=g.st=="Installed"
+      ?'<button class="iact" onclick="event.stopPropagation();toast(\''+g.n+' launching…\')">▶ Play</button>'
+      :'<button class="iact" onclick="event.stopPropagation()">Pause</button><button class="iact" onclick="event.stopPropagation()">⋯</button>';
+    const sel=(state.sel&&state.sel.n==g.n)?"sel":"";
+    return `<div class="row ${sel}" onclick="select('${g.n.replace(/'/g,"\\'")}')">
+      <div class="gname"><div class="swatch" style="background:${sw[g.c]}">${g.n.slice(0,2).toUpperCase()}</div>
+        <div><b>${g.n}</b><small>${g.d}</small></div></div>
+      <span class="src">${g.src}</span><span class="size">${g.sz}</span>${ic}<span class="act">${acts}</span></div>`;
+  }).join('');
+}
+function select(n){state.sel=GAMES.find(g=>g.n===n);renderRows();renderDetail()}
+function statusColor(s){return s=="Installed"?"var(--green)":s=="Grabbing"?"var(--amber)":s=="Paused"?"var(--red)":"var(--dim)"}
+function renderDetail(){
+  const g=state.sel||GAMES[0];
+  const steps=[["Verify swarm health",1],["Download → qBittorrent (NL-04 VPN)",1],["Unpack & sanity-check files",1],
+    ["Apply release install recipe",g.st!="Queued"?1:0],[g.st=="Installed"?"Registered in library ✓":"Waiting for download",g.st=="Installed"?1:0]];
+  document.getElementById('detail').innerHTML=`<div class="d-cover" style="background:${sw[g.c]}"><span>${g.n.slice(0,2).toUpperCase()}</span>
+     <span class="d-price">$0.00 — COMMUNITY VERIFIED</span></div>
+   <div class="d-body"><h2>${g.n}</h2><div class="sub">${g.d}</div>
+   <div class="meta-grid">
+     <div class="meta"><small>Seeders</small><b>${g.seed}</b></div>
+     <div class="meta"><small>Group</small><b>${g.src=="1337x"?"RUNE":g.src=="RuTracker"?"DODI":"FITGIRL"}</b></div>
+     <div class="meta"><small>Size on disk</small><b>${g.sz}</b></div>
+     <div class="meta"><small>Virus scan</small><b style="color:var(--green)">CLEAN</b></div></div>
+   <div class="recipe"><h4>♟ AGENT RECIPE — deterministic</h4>${steps.map(([s,d])=>
+     `<div class="step ${d?'':'pending'} ${d&&s.includes('Waiting')?'active':''}"><span class="tick">${d?'✓':'◌'}</span>${s}</div>`).join('')}</div>
+   <div class="btnrow">${g.st=="Installed"
+     ?'<button class="bigbtn primary" onclick="toast(\''+g.n+' launching…\')">▶ PLAY NOW</button>'
+     :'<button class="bigbtn primary" onclick="toast(\'Priority raised for '+g.n+'\')">↑ PRIORITIZE</button>'}
+     <button class="bigbtn sec2">📂 Folder</button></div>
+   <div class="sub" style="margin-top:12px">Shared with crew: <b style="color:var(--text)">Maya, Tom</b> can stream or copy this install.</div></div>`;
+}
+function consolePane(){
+  const cons=[["Nintendo Switch","382 titles · Ryujinx","#ff4554"],["PlayStation 2","1,843 titles · PCSX2","#8fa3bf"],
+   ["GameCube","312 titles · Dolphin","#6a4dff"],["Game Boy Advance","2,914 titles · mGBA","#3a7bd5"],
+   ["SNES","1,102 titles · bsnes","#e9a13b"],["Dreamcast","198 titles · Flycast","#ff6b9d"]];
+  return `<div style="padding:20px 18px"><div style="font-size:13px;color:var(--dim);margin-bottom:14px">ROM libraries the agent maintains — boxart, saves, and bezels handled automatically.</div>
+   ${cons.map(([n,m,c])=>`<div class="row" style="grid-template-columns:1fr auto"><div class="gname">
+    <div class="swatch" style="background:${c};border-radius:8px">▣</div><div><b>${n}</b><small>${m}</small></div></div>
+    <button class="iact" onclick="toast('Opening ${n} cabinet…')">Open ↗</button></div>`).join('')}</div>`;
+}
+function crewPane(){
+  const fr=[["Maya Chen","◉ playing Portal 2 right now","c1"],["Tom Alvarez","downloaded 4 games today","c6"],
+   ["Priya S.","requested: Deep Rock Galactic","c3"],["Sam O'Dell","idle · 34 games copied","c5"]];
+  return `<div style="padding:20px 18px">${fr.map(([n,s,c])=>`<div class="row" style="grid-template-columns:1fr auto">
+   <div class="gname"><div class="swatch" style="background:${sw[c]};border-radius:50%">${n[0]}</div>
+   <div><b>${n}</b><small>${s}</small></div></div><button class="iact" onclick="toast('Access granted')">Manage ↗</button></div>`).join('')}
+   <div style="margin-top:16px;padding:12px;border:1px dashed var(--border);border-radius:8px;font-size:12px;color:var(--dim)">
+   Crew members browse your library over LAN/Tailscale. Legal reminder: keep the circle private — that's how everyone else's stay-at-home setups survive too.</div></div>`;
+}
+function indexerPane(){
+  const ix=["1337x","RuTracker","IPTorrents","TorrentLeech","TPB","NYAA.si"];
+  return `<div style="padding:20px 18px">${ix.map(i=>`<div class="row" style="grid-template-columns:1fr auto">
+   <div class="gname"><div class="swatch" style="background:#334155">📡</div><div><b>${i}</b>
+   <small>healthy · avg response 210 ms</small></div></div>
+   <span class="mono" style="color:var(--green);font-size:11px">SYNCED</span></div>`).join('')}
+   <div style="margin-top:14px;font-size:12px;color:var(--dim)">Flarr-refresh runs every 15 min. Jackett relay on standby.</div></div>`;
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const b=e.target.closest('.nitem'); if(!b)return;
+  document.querySelectorAll('.nitem').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); state.filter=b.dataset.f; state.sel=null;
+  document.getElementById('q').value="";
+  renderRows();
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key=='k'){e.preventDefault();document.getElementById('q').focus()}
+  if(e.key=='Escape'){document.getElementById('q').value='';state.filter=state.filter.startsWith('_')?"all":state.filter;renderRows()}
+});
+document.getElementById('q').addEventListener('input',renderRows);
+function toast(m){console.log('[toast]',m);alertless(m)}
+function alertless(m){/* visual toast */}
+// lightweight toast
+(function(){const d=document.createElement('div');d.id='_t';document.body.appendChild(d);
+ const s=d.style;s.cssText='position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#1c242e;border:1px solid var(--accent);border-radius:9px;padding:10px 18px;font-size:12.5px;display:none;z-index:99';
+ window.toast=m=>{d.textContent=m;s.display='block';clearTimeout(window._tt);window._tt=setTimeout(()=>s.display='none',2600)}})();
+renderRows();renderDetail();
+
+/* downloads dock live simulation */
+const DOCK=[
+ {n:"Dying Light 2",g:"71.9 GB · IPTorrents · 233 seeds",p:64},
+ {n:"Hollow Knight: Silksong",g:"9.4 GB · TorrentLeech · 1,902 seeds",p:38},
+ {n:"Red Dead Redemption 2",g:"116 GB · paused by you",p:12,pau:true}];
+function drawDock(){
+  document.getElementById('dockItems').innerHTML=DOCK.map((d,i)=>{
+    const spd=d.pau?"—":"8."+Math.floor(Math.random()*9)+" MB/s";
+    return `<div class="dl"><div class="n">${d.n}<small>${d.g}</small></div>
+      <div class="bar ${d.pau?'paused':''}"><i style="width:${d.p}%"></i></div>
+      <span class="st">${d.p.toFixed(1)}% · <b>${spd}</b></span>
+      <div class="dlbtns"><button class="mini" onclick="toggle(${i})">${d.pau?'▶':'‖'}</button>
+      <button class="mini">⋯</button></div></div>`}).join('');
+}
+window.toggle=i=>{DOCK[i].pau=!DOCK[i].pau;drawDock()};
+drawDock();
+setInterval(()=>{
+  DOCK.forEach(d=>{if(!d.pau&&d.p<100)d.p+=Math.random()*.4});
+  const tot=DOCK.reduce((a,d)=>a+(d.pau?0:6+Math.random()*4),0);
+  document.getElementById('speed').textContent=tot.toFixed(1)+" MB/s";
+  document.getElementById('dockSpd').textContent="Σ "+tot.toFixed(1)+" MB/s · ETA 00:"+String(43-Math.floor(DOCK[0].p/3)).padStart(2,'0')+":"+String(Math.floor(Math.random()*60)).padStart(2,'0');
+  drawDock();
+},1000);
+</script>
+</body>
+</html>

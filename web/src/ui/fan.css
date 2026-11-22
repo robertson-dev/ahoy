@@ -1,0 +1,74 @@
+/* The fan of generated cards (ui/fan.tsx): the Home's (screens/home-fan.tsx, with each game's status and action as a pill)
+   and the doors' (ShelfFan, nothing to click). Prefix hf-. */
+
+/* ── the fan: the board's 1440 × 960 frame, scaled as one block from the bottom centre ── */
+.hf { position: absolute; inset: 0; z-index: 1; pointer-events: none; animation: hf-rise .7s var(--ease) backwards .12s; }
+.hf-frame { position: absolute; left: 50%; bottom: 0; width: 1440px; height: 960px; transform-origin: 50% 100%; }
+.hf-card { position: absolute; left: 0; top: 0; width: 384px; height: 560px; transform-origin: 50% 50%; transition: transform .5s var(--ease), translate .25s var(--ease); }
+.hf-card.warp { transition: none; animation: hf-in .45s var(--ease) backwards; }
+.hf-card.side:has(> .hf-hit:hover), .hf-card.side:has(.hf-pill:hover) { translate: 0 -10px; }
+.hf-face { position: absolute; inset: 0; border-radius: 36px; overflow: hidden; isolation: isolate; transition: box-shadow .5s var(--ease), filter .15s var(--ease); }
+.hf-card:has(> .hf-hit:hover) .hf-face { filter: brightness(1.06); }
+.hf-art { position: absolute; inset: 0; display: block; }
+.hf-art.cut { filter: drop-shadow(0 10px 14px rgba(0,0,0,.26)); }
+.hf-art > img { position: absolute; left: 0; top: 0; display: block; max-width: none; transform-origin: 0 0; transition: transform .5s var(--ease); }
+.hf-wash { position: absolute; left: 0; width: 100%; display: block; mix-blend-mode: color; }
+.hf-tint { position: absolute; left: 0; width: 100%; display: block; }
+/* the poster as an object where the cut-out stood (CardArtView "cover"): corners and shadow come inline, at the image's own size */
+.hf-cover { position: absolute; left: 0; top: 0; display: block; overflow: hidden; transform-origin: 0 0; transition: transform .5s var(--ease); }
+.hf-cover > img { display: block; width: 100%; height: 100%; max-width: none; transform-origin: 0 0; transition: transform .5s var(--ease); }
+.hf-title { position: absolute; margin: 0; font-family: var(--display); font-weight: 800; letter-spacing: -.02em; white-space: nowrap; animation: hf-in .35s var(--ease) backwards; }
+.hf-title.plain { white-space: normal; font-size: 32px; line-height: 34px; color: var(--fg); text-wrap: balance; }
+.hf-hit { position: absolute; inset: 0; display: block; margin: 0; padding: 0; border: 0; border-radius: 36px; background: none; cursor: pointer; pointer-events: auto; }
+.hf-row { position: absolute; display: flex; gap: 10px; pointer-events: none; animation: hf-in .35s var(--ease) backwards; }
+.hf-row.under { flex-direction: column; gap: 8px; }
+.hf-status { font-family: var(--ui); font-weight: 500; white-space: nowrap; }
+.hf-pill { position: relative; display: inline-flex; align-items: center; flex: none; border: 1px solid rgba(255,255,255,.22); background: rgba(16,16,16,.55); color: #fff; font-family: var(--ui); font-weight: 700; line-height: 1; white-space: nowrap; cursor: pointer; pointer-events: auto; transition: filter .15s var(--ease), background .15s var(--ease); }
+/* the fan scales as one block (--hf-s), so in a smaller window a pill is drawn under 36 px: its target stays 36 px tall */
+.hf-pill::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: max(100%, calc(36px / var(--hf-s, 1))); transform: translateY(-50%); }
+.hf-pill:hover { filter: brightness(1.08); background: rgba(16,16,16,.66); }
+.hf-pill[disabled], .hf-pill[aria-disabled="true"] { opacity: .6; cursor: default; filter: none; }
+.hf-pill .ic { flex: none; }
+
+/* ── box art (PosterFace, CardTag): the poster is the card; the state on frosted glass over it ── */
+.hf-face.box { background: #1c1c1c; }
+/* the recipe face's top light and a 1 px hairline, over the art (an inset shadow would sit under it) */
+.hf-face.box::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), inset 0 1px 0 rgba(255,255,255,.16); pointer-events: none; }
+/* the art in one layer, so a side card can recede as a whole: the inner pair at 85 % brightness and saturation, the outer pair
+   at 70 %, full again under the pointer */
+.hf-pics { position: absolute; inset: 0; display: block; transition: filter .5s var(--ease); }
+.hf-card[data-slot="1"] .hf-pics, .hf-card[data-slot="3"] .hf-pics { filter: brightness(.85) saturate(.85); }
+.hf-card[data-slot="0"] .hf-pics, .hf-card[data-slot="4"] .hf-pics { filter: brightness(.7) saturate(.7); }
+.hf-card:has(> .hf-hit:hover) .hf-pics, .hf-card:has(.hf-pill:hover) .hf-pics { filter: none; }
+.hf-poster { position: absolute; left: 0; top: 0; display: block; width: 100%; max-width: none; object-fit: cover; }
+.hf-field { position: absolute; left: -24px; top: -24px; display: block; width: calc(100% + 48px); height: calc(100% + 48px); max-width: none; object-fit: cover; filter: blur(16px) brightness(.6); }
+/* what has not arrived yet (PosterArt's .42); all grey (looking, no number yet) is lighter, so a dark poster stays a picture */
+.hf-poster.grey { filter: grayscale(1) brightness(.42); }
+.hf-field.grey { filter: blur(16px) grayscale(1) brightness(.26); }
+.hf-poster.grey.all { filter: grayscale(1) brightness(.78); }
+.hf-field.grey.all { filter: blur(16px) grayscale(1) brightness(.48); }
+.hf-arrived { position: absolute; inset: 0; z-index: 1; display: block; transition: clip-path .6s var(--ease); }
+.hf-tag { position: absolute; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; pointer-events: none; animation: hf-in .35s var(--ease) backwards; }
+.hf-tag.right { align-items: flex-end; }
+.hf-tag.row { flex-direction: row; align-items: center; }
+.hf-tag.right.row { flex-direction: row-reverse; }
+/* neutral glass: the art under it is blurred and drained of most of its colour, so no poster tints the tag */
+.hf-tag-b { display: flex; flex-direction: column; min-width: 0; box-sizing: border-box; background: rgba(16,16,16,.72); -webkit-backdrop-filter: blur(16px) saturate(.4); backdrop-filter: blur(16px) saturate(.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); color: #f2f2f2; font-family: var(--ui); }
+.hf-tag.right .hf-tag-b { text-align: right; }
+.hf-tag-n { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hf-tag-st { display: flex; align-items: center; min-width: 0; font-weight: 500; color: rgba(242,242,242,.72); white-space: nowrap; }
+.hf-tag.right .hf-tag-st { justify-content: flex-end; }
+.hf-tag-st .avatar { flex: none; border-radius: 50%; font-size: 10px; }
+.hf-tag-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.hf-tag-bar { display: block; border-radius: 1px; background: linear-gradient(90deg, #f2f2f2 var(--p, 0%), rgba(255,255,255,.2) var(--p, 0%)); }
+/* over art the pill takes the tag's glass (the recipe's .55 is for its solved colours) */
+.hf-tag .hf-pill { background: rgba(16,16,16,.72); -webkit-backdrop-filter: blur(16px) saturate(.4); backdrop-filter: blur(16px) saturate(.4); }
+.hf-tag .hf-pill:hover { background: rgba(16,16,16,.82); }
+/* the fan rises out of focus; a card that wraps round, and the words a card takes in its new slot, come into focus */
+@keyframes hf-in { from { opacity: 0; filter: blur(8px); } }
+@keyframes hf-rise { from { opacity: 0; translate: 0 40px; filter: blur(16px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hf-card, .hf-face, .hf-art > img, .hf-cover, .hf-cover > img, .hf-arrived, .hf-pics { transition: none; }
+  .hf, .hf-card.warp, .hf-title, .hf-row, .hf-tag { animation: none; }
+}

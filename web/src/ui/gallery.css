@@ -1,0 +1,41 @@
+/* Dev only: /__gallery's own layout (it ships in the gallery's lazy chunk, never in a build). */
+.gx { min-height: 100vh; background: var(--bg); padding-bottom: 120px; }
+/* a board-sized frame: a transform makes the fixed top bar sit inside it, like the boards draw it */
+.gx-frame { position: relative; width: 1440px; overflow: hidden; background: var(--bg); transform: translateZ(0); }
+.gx-frame + .gx-frame { margin-top: 2px; }
+.gx-frame-tag { position: absolute; left: 12px; top: 6px; z-index: 50; font: 600 11px/16px var(--ui); color: var(--fg-3); }
+.gx-shelf { position: relative; padding: 0 var(--page-x); }
+.gx-row { display: flex; gap: 24px; margin-top: 20px; }
+.gx-body { width: 1440px; padding: 96px var(--page-x) 0; display: grid; gap: 96px; }
+.gx-sec > .sh { margin-bottom: 8px; }
+.gx-board { margin-bottom: 24px; color: var(--fg-2); font-size: 13px; }
+.gx-grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px 32px; }
+.gx-cell { display: grid; gap: 10px; justify-items: start; }
+.gx-cell > small { color: var(--fg-2); font-size: 12px; line-height: 16px; }
+.gx-tbl { display: grid; grid-template-columns: 200px 140px 140px 200px 1fr; align-items: center; gap: 14px 24px; }
+.gx-tbl > b { font-size: 12px; font-weight: 600; color: var(--fg-2); }
+.gx-art { position: relative; width: 140px; height: 76px; border-radius: 14px; overflow: hidden; background: #3a3a3a url() center / cover; }
+.gx-swatches { display: flex; flex-wrap: wrap; gap: 16px; }
+.gx-sw { display: grid; gap: 8px; width: 128px; font-size: 12px; color: var(--fg-2); }
+.gx-sw > i { display: block; height: 64px; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--hair-2); }
+.gx-type { display: grid; gap: 12px; }
+.gx-static .tb-panel { position: static; animation: none; max-height: none; }
+.gx-panels { display: flex; align-items: flex-start; gap: 32px; }
+/* a ticket (On the way) composed from the shared pieces, to show the Library how they fit (M/lfs/library-wall) */
+.gx-tickets { display: grid; grid-template-columns: repeat(2, 544px); gap: 24px 28px; }
+.gx-ticket { position: relative; height: 224px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair-1); --av-ring: var(--card); }
+.gx-ticket > .pa { position: absolute; left: 16px; top: 16px; }
+.gx-ticket-info { position: absolute; left: 168px; top: 8px; width: 360px; height: 200px; }
+.gx-ticket-info h4 { height: 36px; margin: 0; font-size: 17px; font-weight: 600; line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gx-ticket-info p { font-size: 15px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gx-ticket-info p b { color: var(--fg); font-weight: 600; }
+.gx-ticket-info .jl { position: absolute; left: 0; top: 88px; }
+.gx-ticket-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; font-weight: 500; color: var(--fg-2); }
+.gx-ticket-foot .btn { width: 96px; padding: 0 3px 0 0; }
+.gx-asked { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }  /* "Asked for by", the face, the name (the board's order) */
+.gx-asked b { color: var(--fg); font-weight: 600; }
+/* the Library's rail and wall (M/lfs/library-wall) */
+.gx-lib { position: absolute; left: var(--page-x); right: var(--page-x); }
+.gx-rail { position: absolute; left: 0; top: 0; width: 204px; margin: 0; font: 800 24px/28px var(--display); letter-spacing: -.01em; }
+.gx-wall { margin-left: 228px; display: grid; grid-template-columns: repeat(5, 204px); column-gap: 24px; row-gap: 40px; }
+.gx-controls { position: absolute; left: var(--page-x); right: var(--page-x); top: 176px; display: flex; align-items: center; justify-content: space-between; }

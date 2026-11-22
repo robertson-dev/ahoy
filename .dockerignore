@@ -1,0 +1,11 @@
+**/node_modules
+launcher
+server/public
+**/*.db
+**/*.db-shm
+**/*.db-wal
+backend/.env
+backend/downloads
+backend/public
+sketches
+.git

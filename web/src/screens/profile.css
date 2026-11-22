@@ -1,0 +1,91 @@
+/* A profile (/u/:name) — the right half of M/lfs/friends-roster/Friends-Roster.dc.html (generator gen.mjs beside it), as a
+   page: its two 432 px halves become the page's two halves (9 columns each, 660 at 1440, 24 apart). The head starts at
+   172 (the bar plus 24); the sections one 64 px step under it, 48 apart; every row has a 40 px lead and a 16 px gap. */
+
+.pf { padding: 24px var(--page-r) 48px var(--page-x); }
+.pf > * { animation: rise-in .4s var(--ease) backwards; }    /* backwards: no transform lingers to trap fixed dialogs */
+.pf > :nth-child(2) { animation-delay: 60ms; }
+.pf.pf-state { padding-top: 96px; }
+
+.pf-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; align-items: start; }
+.pf-row + .pf-row { margin-top: 64px; }
+.pf-row.pf-top { align-items: stretch; }
+.pf-col { display: flex; flex-direction: column; gap: 48px; min-width: 0; }
+.pf-col.pf-first > .pf-who + .pf-sec { margin-top: 16px; }          /* 64 under the head */
+.pf-sec { min-width: 0; }
+.pf-sec > .sh + * { margin-top: 20px; }
+.pf .sh-title { height: 28px; }      /* the board's 28 px heads: a count in Figtree sits on the title's baseline and must not add 1.3 px */
+.pf-sec.pf-second { margin-top: var(--pf-pair, 0px); }               /* the shared line for the second headings */
+.pf-none { margin: 0; font-size: 15px; line-height: 22px; color: var(--fg-2); }
+.pf-col.pf-first > .pf-who + .pf-none { margin-top: 16px; }                 /* where Played lately would start */
+
+/* ── the person ── */
+.pf-who { min-width: 0; }
+.pf-id { display: flex; align-items: center; gap: 24px; height: 96px; min-width: 0; }
+.pf-name { display: flex; align-items: center; min-width: 0; height: 56px; margin: 0; font: 800 48px/56px var(--display); letter-spacing: -.02em; color: var(--fg); white-space: nowrap; }
+.pf-name > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pf-name .tag { flex: none; }
+.pf-presence { margin: 24px 0 0; font-size: 17px; font-weight: 500; line-height: 24px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-presence b, .pf-presence .pf-game { color: var(--fg); font-weight: 600; }
+.pf-presence .pf-game:hover { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+.pf-facts { margin: 4px 0 0; font-size: 15px; font-weight: 500; line-height: 20px; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-about { margin: 12px 0 0; max-width: 60ch; font-size: 15px; line-height: 20px; color: var(--fg); }
+.pf-acts { display: flex; align-items: center; gap: 12px; margin-top: 32px; }
+.pf-acts .fb-pair { gap: 12px; }
+/* the board's head buttons (gen.mjs headerBlock): fixed widths, the label centred, a glyph's button 4 px heavier on the right */
+.pf-acts > .btn[aria-pressed="true"], .pf-acts > a.btn { min-width: 132px; }                                  /* Friends ✓, Edit profile */
+.pf-acts > button.btn:not(.primary):not([aria-pressed]) { min-width: 172px; }                                /* Asked · withdraw */
+.pf-who .pf-acts > .btn.primary:has(> .ic) { min-width: 148px; padding: 0 22px 0 18px; }                     /* Add friend */
+.pf-who .pf-acts .fb-pair > .btn:first-child:has(> .ic) { min-width: 116px; padding: 0 20px 0 16px; }        /* Accept */
+.pf-acts .fb-pair > .btn:last-child { min-width: 116px; }                                                     /* Decline */
+
+/* ── now: the game they are playing, as a card of its key art ── */
+.pf-now { position: relative; min-width: 0; min-height: 248px; overflow: hidden; border-radius: 20px; background: var(--surface-2); isolation: isolate; }
+.pf-now::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--hair-2); pointer-events: none; }
+.pf-now-art { position: absolute; inset: 0; overflow: hidden; }
+.pf-now-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(16,16,16,0) 0, rgba(16,16,16,0) calc(100% - 168px), rgba(16,16,16,.56) calc(100% - 96px), rgba(16,16,16,.84) 100%); }
+.pf-now-link { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px 164px 24px 24px; border-radius: 20px; }
+.pf-now-title { display: block; font: 800 32px/32px var(--display); letter-spacing: -.02em; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-now-line { display: block; font-size: 15px; font-weight: 500; line-height: 20px; color: rgba(255,255,255,.92); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a.pf-now-link:hover .pf-now-title { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: rgba(255,255,255,.4); }
+.pf-now:has(> a.pf-now-link:hover) .fr-ka-hero { transform: scale(1.015); }     /* the art comes before the link, so no sibling selector reaches it */
+/* the card clips its link's ring (overflow: hidden), so the card itself wears it */
+a.pf-now-link:focus-visible { outline: none; }
+.pf-now:has(> a.pf-now-link:focus-visible) { outline: 2px solid var(--lamp); outline-offset: 2px; }
+.pf-now-act { position: absolute; right: 24px; bottom: 28px; z-index: 2; display: flex; }
+.pf-now-act .fr-mine > .ic { width: 18px; height: 18px; }           /* the board draws the now card's Play and Install at 18 */
+.pf-now-act:empty { display: none; }
+.pf-now:has(.pf-now-act:empty) .pf-now-link { padding-right: 24px; }
+
+/* ── the sections ── */
+.pf-wall { display: flex; flex-wrap: wrap; gap: 24px; margin: 0; padding: 0; list-style: none; }
+.pf-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pf-link { display: flex; align-items: center; gap: 16px; min-width: 0; border-radius: 12px; }
+.pf-friend .pf-link { height: 40px; }
+.pf-feed .pf-link { height: 60px; border-radius: 8px; }
+.pf-two { display: block; flex: 1; min-width: 0; }
+.pf-two > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-two-a { font-size: 15px; font-weight: 600; line-height: 20px; color: var(--fg); }
+.pf-two-b { font-size: 13px; font-weight: 500; line-height: 20px; color: var(--fg-2); }
+.pf-two-b b { color: var(--fg); font-weight: 600; }
+.pf-feed .pf-two-a { font-weight: 500; color: var(--fg-2); }
+.pf-feed .pf-two-a b { color: var(--fg); font-weight: 600; }
+.pf-feed .pf-two-b { margin-top: 4px; }
+.pf-lead { display: grid; place-items: center; flex: none; width: 40px; height: 60px; }
+.pf-link:hover .pf-two-a > :first-child, .pf-friend .pf-link:hover .pf-two-a { text-decoration: underline; text-decoration-color: var(--hair-6); text-underline-offset: 3px; }
+.pf-feed .pf-link:hover .pa > img { filter: brightness(1.08); }
+
+/* ── narrow windows: one column ── */
+@media (max-width: 899px) {
+  .pf-row { grid-template-columns: minmax(0, 1fr); row-gap: 48px; }
+  .pf-row + .pf-row { margin-top: 48px; }
+  .pf-sec.pf-second { margin-top: 0; }
+  .pf-facts { white-space: normal; }
+}
+@media (max-width: 640px) {
+  .pf-name { font-size: 40px; line-height: 48px; }
+  .pf-now-link { padding-right: 24px; padding-bottom: 92px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf > * { animation: none; }
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>ahoy</Name>
+  <Repository>ahoy:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project/>
+  <Overview>Ahoy is the player-facing side of your game server: accounts, friends, what everyone is playing, discovery (Steam storefront, Metacritic lists), and the desktop launcher that installs and plays games. The finding, downloading and preparing is done by ludarr, which Ahoy connects to.</Overview>
+  <Category>MediaApp:Other</Category>
+  <WebUI>http://[IP]:[PORT:8790]/</WebUI>
+  <TemplateURL/>
+  <Icon>http://[IP]:[PORT:8790]/favicon.svg</Icon>
+  <ExtraParams>--init</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>The player-facing Ahoy server: accounts, friends, discovery, the launcher. The first person to sign up runs the server and connects it to ludarr from the web UI.</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>8790</HostPort>
+        <ContainerPort>8790</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/ahoy</HostDir>
+      <ContainerDir>/config</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value>8790</Value>
+      <Name>PORT</Name>
+      <Mode/>
+    </Variable>
+  </Environment>
+  <Labels/>
+  <Config Name="Web UI" Target="8790" Default="8790" Mode="tcp" Description="the port Ahoy listens on" Type="Port" Display="always" Required="true" Mask="false">8790</Config>
+  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/ahoy" Mode="rw" Description="database, art cache, the published launcher" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/ahoy</Config>
+  <Config Name="ludarr address" Target="LUDARR_URL" Default="" Mode="" Description="optional: pin the ludarr server here instead of entering it in the web UI" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="ludarr API key" Target="LUDARR_API_KEY" Default="" Mode="" Description="optional, goes with the address above" Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="Card cut-outs" Target="CARD_CUTOUTS" Default="on" Mode="" Description="on: the Home's cards cut their subject out (a 973 MB model, downloaded once; about 7.5 GB of RAM while it works). off: no model, every card a dissolve" Type="Variable" Display="advanced" Required="false" Mask="false">on</Config>
+</Container>

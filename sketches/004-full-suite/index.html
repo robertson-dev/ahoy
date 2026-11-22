@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AHOY — App Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0b0b0c; --panel:#161618; --panel2:#1c1c1f; --hairline:rgba(255,255,255,.09);
+  --txt:#eaeaea; --dim:#8f8f98; --red:#e50914; --ember:#ff5a3c; --amber:#f2b64c; --green:#46d369;
+}
+html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+html,body{height:100%}
+body{font-family:Inter,-apple-system,"Segoe UI",sans-serif;background:var(--black);color:var(--txt);-webkit-font-smoothing:antialiased}
+.bebas{font-family:"Bebas Neue",Impact,sans-serif}
+button{font-family:inherit}
+input,select{font-family:inherit}
+a{color:inherit;text-decoration:none;cursor:pointer}
+
+/* ================= NAV ================= */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:26px;
+  padding:14px 44px;transition:.3s;background:linear-gradient(180deg,rgba(8,8,9,.92),rgba(8,8,9,.4) 75%,transparent)}
+nav.solid{background:rgba(10,10,11,.97);box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.logo{font-family:"Bebas Neue";font-size:27px;letter-spacing:.1em;color:var(--red);cursor:pointer;user-select:none;line-height:1}
+.logo small{display:block;font:600 8px Inter;letter-spacing:.42em;color:var(--dim);text-align:center;margin-top:1px}
+.nl{font-size:13.5px;color:#cfcfd4;transition:.15s;padding:6px 2px;border-bottom:2px solid transparent}
+.nl:hover{color:#fff}
+.nl.on{font-weight:700;color:#fff;border-bottom-color:var(--red)}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:12px}
+.nsearch{display:flex;align-items:center;gap:8px;border:1px solid var(--hairline);background:rgba(0,0,0,.55);
+  border-radius:6px;padding:7px 12px;width:0;opacity:0;overflow:hidden;transition:.25s}
+.nsearch.open{width:230px;opacity:1}
+.nsearch input{background:none;border:none;outline:none;color:#fff;font-size:13px;width:100%}
+.icon-btn{width:34px;height:34px;border-radius:7px;display:grid;place-items:center;color:#cfcfd4;cursor:pointer;
+  background:none;border:none;font-size:15px;transition:.15s;position:relative}
+.icon-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.dl-count{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:9px;font-weight:800;
+  border-radius:8px;padding:1px 5px}
+.face{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#e50914,#7a1622);
+  display:grid;place-items:center;font-weight:800;font-size:14px;cursor:pointer}
+
+/* ================= VIEW SYSTEM ================= */
+.page{display:none;min-height:100vh;padding-top:0}
+.page.on{display:block}
+.container{padding:0 44px}
+
+/* ================= BILLBOARD (home) ================= */
+.billboard{position:relative;height:72vh;min-height:560px;isolation:isolate;overflow:hidden}
+.bb-art{position:absolute;inset:0;z-index:-2;transition:opacity .8s}
+.bb-vign{position:absolute;inset:0;z-index:-1;background:
+  linear-gradient(80deg,rgba(8,8,9,.92) 0%,rgba(8,8,9,.5) 44%,transparent 70%),
+  linear-gradient(180deg,transparent 50%,rgba(11,11,12,.98) 96%)}
+.bb-inner{position:absolute;left:44px;bottom:15%;max-width:640px}
+.bb-kicker{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:11.5px;letter-spacing:.3em;color:#d8d8dd;font-weight:600}
+.bb-kicker i{width:26px;height:2px;background:var(--red);font-style:normal}
+.bb-title{font-family:"Bebas Neue";font-size:clamp(58px,7.5vw,104px);line-height:.9;color:#fff;text-shadow:0 10px 60px rgba(0,0,0,.85)}
+.bb-meta{display:flex;align-items:center;gap:12px;margin:16px 0 8px;font-size:13.5px;color:#d8d8dd;flex-wrap:wrap}
+.star{color:var(--amber);font-weight:800}
+.chip{border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:1.5px 8px;font-size:11px;color:#ddd}
+.chip.free{background:rgba(229,9,20,.16);border-color:rgba(229,9,20,.55);color:#ff9a95;font-weight:800}
+.chip.ok{background:rgba(70,211,105,.12);border-color:rgba(70,211,105,.45);color:#86dfa0}
+.bb-desc{font-size:15.5px;line-height:1.65;color:#e3e3e6;max-width:540px;text-shadow:0 2px 16px rgba(0,0,0,.7)}
+.bb-ctas{display:flex;gap:12px;margin-top:22px;align-items:center}
+.bb-play{display:flex;align-items:center;gap:9px;background:#fff;color:#000;border:none;border-radius:6px;
+  padding:12px 30px;font-weight:800;font-size:15px;cursor:pointer;transition:.2s}
+.bb-play:hover{transform:translateY(-2px)}
+.bb-play.busy{background:var(--green);color:#04240f}
+.bb-more{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:6px;
+  padding:11px 24px;font-weight:600;font-size:13.5px;cursor:pointer;transition:.15s;backdrop-filter:blur(4px)}
+.bb-more:hover{background:rgba(255,255,255,.2)}
+
+/* ================= ART ENGINE ================= */
+.art{position:absolute;inset:0;overflow:hidden}
+.art::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.ridge{position:absolute;left:0;right:0;bottom:0;height:52%;z-index:1;
+  clip-path:polygon(0 68%,8% 52%,17% 60%,26% 40%,38% 55%,47% 34%,60% 52%,70% 42%,82% 58%,92% 44%,100% 55%,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(6,5,8,.82),rgba(2,2,3,.98))}
+.ridge2{position:absolute;left:0;right:0;bottom:0;height:66%;z-index:0;opacity:.5;
+  clip-path:polygon(0 80%,10% 62%,22% 74%,34% 56%,45% 70%,58% 50%,72% 66%,84% 52%,100% 68%,100% 100%,0 100%);
+  background:linear-gradient(180deg,rgba(30,22,36,.5),rgba(10,8,14,.8))}
+.haze{position:absolute;left:0;right:0;bottom:26%;height:34%;z-index:0;background:radial-gradient(70% 100% at 50% 100%,rgba(255,190,130,.13),transparent 70%)}
+.beam{position:absolute;top:0;bottom:0;width:34%;left:55%;background:linear-gradient(115deg,transparent 20%,rgba(255,240,210,.15) 50%,transparent 80%);transform:skewX(-12deg)}
+.orbsun{position:absolute;border-radius:50%;filter:blur(2px)}
+.s1{background:radial-gradient(120% 90% at 78% 18%,#ffce7a 0%,#e0762f 18%,transparent 46%),radial-gradient(150% 110% at 80% 100%,#5c1608 0%,transparent 60%),linear-gradient(200deg,#2b0f0a 5%,#100604 60%,#050304 100%)}
+.s2{background:radial-gradient(110% 80% at 20% 88%,#9fe8ff28 0%,transparent 55%),linear-gradient(160deg,#04182b 0%,#0a3a55 55%,#1273a0 100%)}
+.s3{background:radial-gradient(100% 70% at 50% 100%,#1e5c34 0%,transparent 65%),linear-gradient(180deg,#0a1f12 0%,#06120a 100%)}
+.s4{background:radial-gradient(80% 55% at 62% 38%,#e0b4ff24 0%,transparent 60%),radial-gradient(70% 90% at 80% 90%,#5a2bb850,transparent 65%),linear-gradient(160deg,#140a24 0%,#1c1030 60%,#080410 100%)}
+.s5{background:radial-gradient(120% 70% at 30% 12%,#ffd98a28 0%,transparent 50%),linear-gradient(180deg,#3c1e08 0%,#170b02 70%,#090400 100%)}
+.s6{background:radial-gradient(90% 60% at 72% 30%,#ff9db020,transparent 55%),radial-gradient(120% 100% at 15% 95%,#8e103050,transparent 60%),linear-gradient(165deg,#1c050d 0%,#2a0812 55%,#0c0206 100%)}
+.s7{background:radial-gradient(100% 80% at 50% 0%,#666a7528,transparent 55%),linear-gradient(180deg,#23262c 0%,#121417 55%,#07080a 100%)}
+.s8{background:radial-gradient(85% 60% at 30% 76%,#2ec5a022,transparent 58%),radial-gradient(120% 90% at 85% 20%,#f0d0601c,transparent 52%),linear-gradient(200deg,#0d211c 0%,#081512 60%,#040907 100%)}
+
+/* ================= CARD ROWS ================= */
+.rows{position:relative;z-index:5;margin-top:-70px;padding-bottom:70px}
+.row{padding-left:44px;margin-bottom:4px}
+.row-head{display:flex;align-items:baseline;gap:14px;margin-bottom:2px}
+.row-head h2{font-size:19px;font-weight:800}
+.row-head .more{font-size:12px;color:#8a8a92;cursor:pointer}
+.row-head .more:hover{color:#fff}
+.slider-wrap{position:relative}
+.slider{display:flex;gap:8px;overflow-x:auto;padding:12px 44px 30px;margin-left:-44px;scrollbar-width:none;scroll-behavior:smooth}
+.slider::-webkit-scrollbar{display:none}
+.card{position:relative;flex:none;border-radius:6px;overflow:hidden;background:var(--panel);cursor:pointer;
+  transition:transform .2s,box-shadow .2s;border:1px solid rgba(255,255,255,.04)}
+.card:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.85);z-index:10}
+.land{width:288px;height:162px}
+.sm{width:218px;height:123px}
+.post{width:180px;height:256px}
+.card-shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 46%,rgba(8,8,9,.88) 88%)}
+.t-inart{position:absolute;left:12px;top:12px;font-family:"Bebas Neue";font-size:24px;line-height:.95;letter-spacing:.04em;
+  color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.8);z-index:2;max-width:80%}
+.post .t-inart{font-size:30px;top:14px}
+.card-foot{position:absolute;left:0;right:0;bottom:0;padding:9px 11px 10px;z-index:3}
+.cf-top{display:flex;gap:7px}
+.circ{width:27px;height:27px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);display:grid;place-items:center;
+  color:#fff;font-size:10.5px;cursor:pointer;background:rgba(15,15,17,.4);transition:.15s;flex:none}
+.circ:hover{border-color:#fff;background:rgba(255,255,255,.15)}
+.circ.filled{background:#fff;color:#000;border-color:#fff}
+.circ.push{margin-left:auto}
+.cf-line{display:flex;align-items:center;gap:7px;margin-top:7px;font-size:11px;color:#c9c9ce}
+.cf-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.direct-card{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:16px;
+  background:linear-gradient(110deg,rgba(70,211,105,.1),rgba(70,211,105,.02) 60%);
+  border:1px solid rgba(70,211,105,.35);border-radius:12px;padding:16px 18px}
+.dc-badge{font-size:10px;font-weight:800;letter-spacing:.14em;color:#86dfa0;margin-bottom:7px}
+.dc-copy b{display:block;font-size:14px;margin-bottom:4px;color:#fff}
+.dc-copy span{font-size:12px;color:var(--dim);line-height:1.5;display:block;max-width:520px}
+.dc-stats{display:flex;gap:14px;margin-top:8px;font-size:11px;color:#cfcfd4;flex-wrap:wrap}
+.dc-stats .ok{color:#86dfa0;font-weight:700}
+.dc-go{background:var(--green);color:#04240f;border:none;border-radius:9px;padding:13px 22px;font-weight:800;
+  font-size:13.5px;cursor:pointer;transition:.15s;white-space:nowrap}
+.dc-go:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(70,211,105,.3)}
+.free-pill{background:var(--red);color:#fff;font-weight:800;font-size:9px;letter-spacing:.06em;padding:2px 6px;border-radius:3px}
+.shipchip{font-size:9px;font-weight:800;letter-spacing:.12em}
+.shipchip.ok{color:#86dfa0}.shipchip.wait{color:#ffd280}.shipchip.req{color:#9a9aa3}
+.direct-card.amber{background:linear-gradient(110deg,rgba(242,182,76,.1),rgba(242,182,76,.02) 60%);border-color:rgba(242,182,76,.4)}
+.direct-card.amber .dc-badge{color:#ffd280}
+.dc-go.amber{background:var(--amber)}
+
+.seed{color:#86dfa0;font-weight:700;font-size:10px}
+.redbar{position:absolute;left:0;bottom:0;height:3px;background:var(--red);z-index:4}
+.statepill{position:absolute;top:9px;right:9px;z-index:3;font-size:9px;font-weight:800;letter-spacing:.08em;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:3px 7px;border-radius:4px;border:1px solid rgba(255,255,255,.2)}
+.statepill.inst{color:#86dfa0;border-color:rgba(70,211,105,.5)}
+.statepill.dl{color:#ffd280;border-color:rgba(255,180,60,.5)}
+
+/* top ten */
+.topten .card{width:236px;height:133px;margin-left:44px}
+.bigrank{position:absolute;left:-56px;bottom:2px;font-family:"Bebas Neue";font-size:132px;line-height:1;color:#0b0b0c;
+  -webkit-text-stroke:3px rgba(255,255,255,.38);z-index:1;user-select:none}
+.topten .slider{padding-left:126px;margin-left:-126px;padding-left:170px}
+
+/* ================= SECTION HEADERS (inner pages) ================= */
+.pagehead{padding:84px 44px 6px;position:relative;z-index:5}
+.pagehead h1{font-family:"Bebas Neue";font-size:44px;letter-spacing:.04em}
+.pagehead p{color:var(--dim);font-size:13.5px;margin-top:2px}
+.ph-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+.phrow{display:flex;align-items:flex-end;gap:16px}
+.filters{display:flex;gap:8px;margin:16px 0 20px;flex-wrap:wrap}
+.lib-search{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--hairline);
+  border-radius:999px;padding:8px 16px;color:var(--dim);font-size:13px;min-width:240px}
+.lib-search input{background:none;border:none;outline:none;color:#fff;font:inherit;width:100%}
+.lib-search input::placeholder{color:var(--dim)}
+.fchip{border:1px solid var(--hairline);background:var(--panel);color:#bbb;border-radius:999px;padding:7px 16px;
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.fchip:hover{color:#fff}
+.fchip.on{background:#fff;color:#000;border-color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:14px;padding:0 44px 60px;position:relative;z-index:5}
+.gcard{position:relative;border-radius:6px;overflow:hidden;background:var(--panel);cursor:pointer;border:1px solid rgba(255,255,255,.04);transition:.18s;aspect-ratio:3/4.2}
+.gcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.7);border-color:rgba(255,255,255,.14)}
+.gcard .t-inart{position:absolute;left:10px;top:10px;font-size:26px}
+.gf{position:absolute;left:0;right:0;bottom:0;padding:10px 11px 11px;z-index:3;background:linear-gradient(180deg,transparent,rgba(5,5,6,.9) 55%)}
+.gf b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf small{font-size:10.5px;color:var(--dim)}
+.gbar{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:8px;overflow:hidden}
+.gbar i{display:block;height:100%;background:var(--green);border-radius:2px}
+.gplay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,5,6,.45);opacity:0;transition:.18s;z-index:4}
+.gcard:hover .gplay{opacity:1}
+.bigplay{width:46px;height:46px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;font-size:15px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+
+/* stat strip */
+.strip{display:flex;gap:14px;margin:14px 0 4px;flex-wrap:wrap}
+.stat{background:var(--panel);border:1px solid var(--hairline);border-radius:10px;padding:13px 18px;min-width:150px}
+.stat small{display:block;font-size:10px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.stat b{font-size:19px;font-weight:800}
+.stat .sub{font-size:11px;color:var(--dim)}
+.diskbar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:9px;overflow:hidden}
+.diskbar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#f2b64c,#e50914)}
+
+/* ================= DETAIL PAGE ================= */
+.det-hero{position:relative;height:60vh;min-height:440px;isolation:isolate;overflow:hidden}
+.det-back{position:absolute;top:76px;left:44px;z-index:6;display:flex;align-items:center;gap:8px;color:#ddd;
+  font-size:13px;font-weight:600;cursor:pointer;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.14);
+  padding:8px 16px;border-radius:999px;backdrop-filter:blur(6px)}
+.det-back:hover{background:rgba(0,0,0,.55)}
+.det-body{position:relative;z-index:5;margin-top:-110px;padding:0 44px}
+.det-cols{display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start}
+.det-main h1{font-family:"Bebas Neue";font-size:64px;line-height:.94;letter-spacing:.02em}
+.det-tags{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.det-desc{color:#d5d5da;font-size:15px;line-height:1.7;max-width:640px}
+.det-h3{font-size:15px;font-weight:800;margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+.det-h3::before{content:"";width:22px;height:2px;background:var(--red)}
+.shots{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.shot{flex:none;width:264px;height:148px;border-radius:8px;overflow:hidden;position:relative;border:1px solid var(--hairline);cursor:pointer}
+.shot:hover{border-color:rgba(255,255,255,.3)}
+.editions{border:1px solid var(--hairline);border-radius:12px;overflow:hidden}
+.edition{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:14px 18px;
+  border-bottom:1px solid var(--hairline);cursor:pointer;transition:.15s;background:rgba(255,255,255,.015)}
+.edition:last-child{border-bottom:none}
+.edition:hover{background:rgba(255,255,255,.05)}
+.edition.sel{background:rgba(229,9,20,.1);box-shadow:inset 3px 0 0 var(--red)}
+.edition b{font-size:13.5px;display:block}
+.edition small{color:var(--dim);font-size:11px}
+.ed-seeds{font-size:11px;color:#86dfa0;font-weight:700;text-align:right}
+.ed-time{font-size:11px;color:var(--dim);text-align:right}
+.recipe{background:var(--panel);border:1px solid var(--hairline);border-radius:12px;padding:16px 18px;margin-top:14px}
+.recipe h4{font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:12px}
+.rstep{display:flex;gap:11px;font-size:12.5px;color:var(--dim);padding:5px 0;align-items:center}
+.rstep .tick{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font-size:9.5px;flex:none;
+  border:1.5px solid rgba(255,255,255,.25)}
+.rstep.done{color:#cfcfd4}.rstep.done .tick{background:var(--green);border-color:var(--green);color:#04240f}
+.rstep.run{color:#fff}.rstep.run .tick{border-color:var(--amber);color:var(--amber);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.4}}
+.side-card{background:var(--panel);border:1px solid var(--hairline);border-radius:12px;padding:18px;margin-bottom:16px}
+.side-card h4{font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:12px}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;color:#cfcfd4}
+.kv b{color:#fff;font-weight:600}
+.btn-big{width:100%;border:none;border-radius:9px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;transition:.15s}
+.btn-white{background:#fff;color:#000}
+.btn-white:hover{transform:translateY(-1px)}
+.btn-ghost2{background:transparent;border:1px solid var(--hairline);color:#ddd;margin-top:9px;font-weight:600;font-size:13px}
+.btn-ghost2:hover{background:rgba(255,255,255,.06)}
+.btn-ok{background:var(--green);color:#04240f}
+.crewline{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12.5px;color:#c9c9ce}
+.miniface{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff;flex:none}
+
+/* ================= CABINETS ================= */
+.deckgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:0 44px 40px;position:relative;z-index:5}
+.deckcard{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--hairline);cursor:pointer;min-height:150px;
+  display:flex;flex-direction:column;justify-content:flex-end;padding:18px;transition:.18s;isolation:isolate}
+.deckcard:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.25);box-shadow:0 18px 46px rgba(0,0,0,.6)}
+.deckcard .art{z-index:-1}
+.deckcard b{font-family:"Bebas Neue";font-size:27px;letter-spacing:.05em}
+.deckcard small{color:#c9c9ce;font-size:12px}
+.corechip{position:absolute;top:12px;right:12px;font-size:10px;font-weight:800;letter-spacing:.08em;color:#86dfa0;
+  background:rgba(0,0,0,.5);border:1px solid rgba(70,211,105,.4);padding:4px 9px;border-radius:5px;backdrop-filter:blur(4px)}
+.health{position:relative;z-index:5;padding:0 44px 34px}
+.healthcard{background:var(--panel);border:1px solid var(--hairline);border-radius:12px;padding:18px 20px}
+.hrow{display:flex;align-items:center;gap:11px;font-size:12.5px;padding:6px 0;color:#cfcfd4}
+.hdot{width:8px;height:8px;border-radius:50%;flex:none}
+.hd-g{background:var(--green);box-shadow:0 0 8px rgba(70,211,105,.7)}
+.hd-a{background:var(--amber)}
+.hrow b{color:#fff;font-weight:600}
+
+/* ================= CREW ================= */
+.crewgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;padding:0 44px 20px;position:relative;z-index:5}
+.mem{background:var(--panel);border:1px solid var(--hairline);border-radius:14px;padding:18px;display:flex;gap:14px;align-items:center;transition:.15s}
+.mem:hover{border-color:rgba(255,255,255,.2)}
+.bigface{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:17px;color:#fff;flex:none;position:relative}
+.presence{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;border:2px solid var(--panel)}
+.pr-on{background:var(--green)} .pr-off{background:#5a5a63} .pr-ig{background:var(--amber)}
+.mem b{font-size:14px;display:block}
+.mem small{font-size:11.5px;color:var(--dim);display:block;margin-top:2px}
+.timeline{padding:0 44px 60px;position:relative;z-index:5}
+.tl{border-left:2px solid rgba(255,255,255,.1);margin-left:8px;padding-left:22px}
+.tl-item{position:relative;padding:10px 0 14px}
+.tl-item::before{content:"";position:absolute;left:-28px;top:16px;width:10px;height:10px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 10px rgba(229,9,20,.6)}
+.tl-item .when{font-size:10.5px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.tl-item p{font-size:13.5px;margin-top:3px;color:#d5d5da}
+.tl-item p b{color:#fff}
+.invite{margin:10px 44px 30px;background:linear-gradient(120deg,rgba(229,9,20,.14),rgba(229,9,20,.03));
+  border:1px solid rgba(229,9,20,.35);border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:22px;position:relative;z-index:5}
+.passcode{font-family:"Bebas Neue";font-size:30px;letter-spacing:.28em;color:#fff;background:rgba(0,0,0,.35);
+  padding:8px 20px;border-radius:9px;border:1px dashed rgba(255,255,255,.35)}
+
+/* ================= SETTINGS ================= */
+.setgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 44px 70px;position:relative;z-index:5}
+.setcard{background:var(--panel);border:1px solid var(--hairline);border-radius:14px;padding:20px}
+.setcard h3{font-size:14px;font-weight:800;margin-bottom:4px}
+.setcard>p{font-size:12px;color:var(--dim);margin-bottom:14px}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.srow:last-child{border-bottom:none}
+.srow small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+.togl{width:38px;height:21px;border-radius:11px;background:#33343a;position:relative;cursor:pointer;transition:.2s;flex:none}
+.togl::after{content:"";position:absolute;top:2.5px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.togl.on{background:var(--green)}
+.togl.on::after{left:19px}
+.numctl{display:flex;align-items:center;gap:10px}
+.numctl button{width:24px;height:24px;border-radius:6px;border:1px solid var(--hairline);background:none;color:#fff;cursor:pointer;font-size:13px}
+.numctl b{min-width:20px;text-align:center}
+
+/* ================= DRAWER (downloads) ================= */
+.drawer{position:fixed;top:0;right:-420px;bottom:0;width:400px;background:#101012;border-left:1px solid var(--hairline);
+  z-index:80;transition:right .3s cubic-bezier(.2,.9,.3,1);display:flex;flex-direction:column;box-shadow:-30px 0 80px rgba(0,0,0,.6)}
+.drawer.open{right:0}
+.dr-head{padding:18px 22px;border-bottom:1px solid var(--hairline);display:flex;align-items:center;gap:12px}
+.dr-head b{font-size:15px}
+.dr-close{margin-left:auto}
+.dr-sum{padding:12px 22px;font-size:11.5px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.05)}
+.dr-list{flex:1;overflow-y:auto;padding:10px 14px}
+.dlrow{background:var(--panel);border:1px solid var(--hairline);border-radius:10px;padding:13px 15px;margin-bottom:10px}
+.dlrow .top{display:flex;align-items:baseline;gap:8px}
+.dlrow b{font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dlrow .pc{font-family:"Bebas Neue";font-size:19px;color:var(--amber)}
+.dlrow .meta{font-size:10.5px;color:var(--dim);margin-top:2px}
+.dlbar2{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:9px;overflow:hidden}
+.dlbar2 i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--red),var(--ember));transition:width .8s}
+.dlbar2.paused i{background:#5a5a63}
+.dl-acts{display:flex;gap:6px;margin-top:9px}
+.dlab{background:none;border:1px solid var(--hairline);color:#bbb;border-radius:6px;font-size:10.5px;padding:3.5px 10px;cursor:pointer}
+.dlab:hover{color:#fff;border-color:#666}
+.dlab.warn{color:#ff8a80;border-color:rgba(229,9,20,.3)}
+.dr-foot{padding:14px 22px;border-top:1px solid var(--hairline);font-size:11px;color:var(--dim)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:#1d1d20;color:#fff;
+  border:1px solid rgba(255,255,255,.14);border-left:3px solid var(--red);border-radius:8px;padding:13px 20px;
+  font-size:13px;opacity:0;transition:.3s;z-index:99;pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,.7);max-width:440px}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast b{color:#ffb0a8}
+
+.seg{display:flex;border:1px solid var(--hairline);border-radius:999px;overflow:hidden;margin-left:4px;flex:none}
+.seg button{background:none;border:none;color:var(--dim);font:700 10.5px Inter;padding:7px 14px;cursor:pointer;letter-spacing:.1em;transition:.15s}
+.seg button:hover{color:#fff}
+.seg button.on{background:var(--red);color:#fff}
+@media(max-width:900px){
+  nav,.row,.container,.pagehead,.health,.timeline{padding-left:20px;padding-right:20px}
+  .invite{margin-left:20px;margin-right:20px}
+  .det-cols{grid-template-columns:1fr}
+  .setgrid{grid-template-columns:1fr}
+  .slider{padding-left:20px;margin-left:0}
+}
+</style>
+</head>
+<body>
+<script>window.addEventListener('error',function(e){var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;right:0;background:#e50914;color:#fff;padding:6px 12px;z-index:99999;font:12px monospace';d.textContent='JS ERROR: '+e.message+' line '+e.lineno;document.body.appendChild(d)});</script>
+
+<nav id="nav">
+  <div class="logo" data-go="home">AHOY<small>EVERYTHING. FREE.</small></div>
+  <a class="nl" data-go="home">Home</a>
+  <a class="nl" data-go="library">My Library</a>
+  <a class="nl" data-go="crew">Crew</a>
+  <a class="nl" data-go="settings">Settings</a>
+  <div class="seg" title="Whose eyes?"><button id="segOwner" class="on">CAPTAIN</button><button id="segCrew">CREW</button></div>
+  <div class="nav-r">
+    <div class="nsearch" id="nsearch"><span style="color:#999">⌕</span><input placeholder="Search releases…" id="q"></div>
+    <button class="icon-btn" onclick="document.getElementById('nsearch').classList.toggle('open')">⌕</button>
+    <button class="icon-btn" onclick="openDrawer()" title="Downloads">⇣<span class="dl-count" id="dlCount">3</span></button>
+    <div class="face" title="Sam">S</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<section class="page on" id="pg-home">
+  <div class="billboard">
+    <div class="bb-art" id="bbArt"><div class="art s1"><div class="beam"></div><div class="ridge2"></div><div class="haze"></div><div class="ridge"></div></div></div>
+    <div class="bb-vign"></div>
+    <div class="bb-inner">
+      <div class="bb-kicker"><i></i><span id="bbKick">RELEASE OF THE WEEK</span></div>
+      <h1 class="bb-title" id="bbTitle">BLACK MYTH: WUKONG</h1>
+      <div class="bb-meta" id="bbMeta">
+        <span class="star">★ 4.9</span><span>2024</span><span class="chip free">AVAILABLE</span>
+        <span class="chip ok">SCAN CLEAN</span><span class="chip">41 GB PACK</span><span class="chip">812 SEEDS</span>
+      </div>
+      <p class="bb-desc" id="bbDesc">The Journey to the West as a river of fists. Verified community pack — the agent installs, patches and shelves it while your kettle boils.</p>
+      <div class="bb-ctas">
+        <button class="bb-play" id="bbPlay" onclick="bbGo()">↓ Get It</button>
+        <button class="bb-more" onclick="go('detail','wukong')">ℹ Details</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="rows">
+    <section class="row"><div class="row-head"><h2>Jump Back In</h2><span class="more" data-go="library">My Library ›</span></div>
+      <div class="slider-wrap"><div class="slider" id="s-cont"></div></div></section>
+    <section class="row topten"><div class="row-head"><h2>Hottest Swarms Today</h2><span class="more">Full charts ›</span></div>
+      <div class="slider-wrap"><div class="slider" id="s-ten"></div></div></section>
+    <section class="row"><div class="row-head"><h2>Fresh Off the Boat</h2><span class="more" data-go="library">Browse all ›</span></div>
+      <div class="slider-wrap"><div class="slider" id="s-new"></div></div></section>
+    <section class="row"><div class="row-head"><h2>Cabinet Vaults</h2><span class="more">Consoles live in here too ›</span></div>
+      <div class="slider-wrap"><div class="slider" id="s-deck"></div></div></section>
+  </main>
+</section>
+
+<!-- ═══════════════ DETAIL ═══════════════ -->
+<section class="page" id="pg-detail">
+  <div class="det-hero">
+    <div class="bb-art" id="detArt"></div>
+    <div class="bb-vign"></div>
+    <div class="det-back" onclick="history.back()">‹ Back</div>
+  </div>
+  <div class="det-body">
+    <div class="det-cols">
+      <div class="det-main">
+        <h1 id="dtTitle">—</h1>
+        <div class="det-tags" id="dtTags"></div>
+        <p class="det-desc" id="dtDesc"></p>
+
+        <div class="det-h3">Screenshots</div>
+        <div class="shots" id="dtShots"></div>
+
+        <div class="det-h3">Choose your pack</div>
+        <div class="editions" id="dtEds"></div>
+
+        <div id="dtDirect"></div>
+
+        <div class="recipe">
+          <h4>Agent setup — runs after download, fully automatic</h4>
+          <div id="dtRecipe"></div>
+        </div>
+      </div>
+      <aside>
+        <div class="side-card" style="text-align:center">
+          <div style="font-family:'Bebas Neue';font-size:44px;color:#fff;line-height:1" id="dtAvail">IN SWARM</div>
+          <div style="font-size:11px;color:var(--dim);letter-spacing:.1em" id="dtAvailSub">ONE CLICK · FOREVER YOURS</div>
+          <button class="btn-big btn-white" style="margin-top:14px" id="dtGet">↓ Get It</button>
+          <button class="btn-big btn-ghost2" onclick="toast('Added to your wishlist ♡')">♡ Wishlist</button>
+        </div>
+        <div class="side-card"><h4>Swarm</h4>
+          <div class="kv"><span>Seeds / Peers</span><b id="dtSeeds">—</b></div>
+          <div class="kv"><span>Health</span><b style="color:var(--green)" id="dtHealth">Excellent</b></div>
+          <div class="kv"><span>Virus scan</span><b style="color:var(--green)">Clean ✓</b></div>
+          <div class="kv"><span>Scene group</span><b id="dtGroup">—</b></div>
+        </div>
+        <div class="side-card"><h4>Your crew</h4>
+          <div class="crewline"><span class="miniface" style="background:#e11d48">M</span>Maya played 6 hrs last week</div>
+          <div class="crewline"><span class="miniface" style="background:#059669">T</span>Tom installed this on Tuesday</div>
+          <div class="crewline"><span class="miniface" style="background:#7c3aed">P</span>Priya has this in wishlist</div>
+          <button class="btn-big btn-ghost2" onclick="toast('Crew can now see & grab this release')">👥 Share with crew</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div style="height:60px"></div>
+</section>
+
+<!-- ═══════════════ LIBRARY ═══════════════ -->
+<section class="page" id="pg-library">
+  <div class="pagehead"><div class="phrow"><h1>MY LIBRARY</h1>
+    <div class="ph-actions"><span style="font-size:12px;color:var(--dim)" id="libSum">—</span></div></div>
+    <p>Everything you've boarded. Updates and repairs are handled overnight by the agent.</p></div>
+  <div class="container">
+    <div class="filters" style="align-items:center">
+      <div class="lib-search">⌕<input id="libQ" placeholder="Filter your library…"></div>
+      <div class="filters" id="libFilters" style="margin:0"></div>
+    </div>
+  </div>
+  <div class="grid" id="libGrid"></div>
+</section>
+
+<!-- ═══════════════ CREW ═══════════════ -->
+<section class="page" id="pg-crew">
+  <div class="pagehead"><div class="phrow"><h1>CREW</h1></div>
+    <p>Private by design — invite by passphrase, never by public link. Members browse your library over LAN / Tailscale.</p></div>
+  <div class="crewgrid" id="crewGrid"></div>
+  <div class="invite">
+    <div><b style="font-size:14px">Invite a new shipmate</b><div style="font-size:11.5px;color:var(--dim);margin-top:3px">They enter this passphrase on their first launch. Rotates weekly.</div></div>
+    <div class="passcode" id="passcode">ANCHOR-77</div>
+    <button class="bb-more" onclick="rotPass();toast('New passphrase generated — old one retired at midnight')">↻ Rotate</button>
+  </div>
+  <div class="timeline"><div class="tl" id="crewTL"></div></div>
+</section>
+
+<!-- ═══════════════ SETTINGS ═══════════════ -->
+<section class="page" id="pg-settings">
+  <div class="pagehead"><div class="phrow"><h1>SETTINGS</h1></div><p>The agent's standing orders. Change freely — it adapts.</p></div>
+  <div class="setgrid">
+    <div class="setcard"><h3>Downloads</h3><p>Speed, scheduling and seeding posture.</p>
+      <div class="srow"><span>Parallel torrents<small>Higher = faster, more ISP attention</small></span><span class="numctl"><button onclick="num(this,-1)">−</button><b>3</b><button onclick="num(this,1)">+</button></span></div>
+      <div class="srow"><span>Night scheduler<small>Full-throttle 01:00–07:00, polite throttle after</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Seed back what I take<small>Keep ratio ≥ 1.0 — keeps swarms alive</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Auto-stop at 95% disk<small>Never fill the drive to choking</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+    </div>
+    <div class="setcard"><h3>Agent behavior</h3><p>How hands-off the setup robot is allowed to be.</p>
+      <div class="srow"><span>Auto-install after download<small>No confirmation gate — just do it</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Try scripted recipes first<small>LLM agent only for unknown releases</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Delete install archives after setup<small>Saves disk; originals stay in swarm anyway</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Notify on play-ready<small>Tells you the moment a game is shelved</small></span><span class="togl" onclick="this.classList.toggle('on')"></span></div>
+    </div>
+    <div class="setcard"><h3>Privacy & VPN</h3><p>Kill-switch posture and crew exposure.</p>
+      <div class="srow"><span>VPN kill-switch<small>Halt all traffic if tunnel drops</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Crew LAN visibility<small>Others on your network can see shares</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Anonymous crowd-stats sharing<small>Report which packs install cleanly</small></span><span class="togl" onclick="this.classList.toggle('on')"></span></div>
+    </div>
+    <div class="setcard"><h3>Cabinets</h3><p>Emulation defaults across every deck.</p>
+      <div class="srow"><span>Auto-pull boxart & saves<small>Scraper: ScreenScraper / SGDB</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Shader presets per core<small> crt-royale for SD, fresh layers for HD</small></span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+      <div class="srow"><span>Verify BIOS checksums nightly</span><span class="togl on" onclick="this.classList.toggle('on')"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DRAWER ═══════════════ -->
+<aside class="drawer" id="drawer">
+  <div class="dr-head"><b>DOWNLOADS</b><span style="font-size:11px;color:var(--dim)">agent running</span>
+    <button class="icon-btn dr-close" onclick="closeDrawer()">✕</button></div>
+  <div class="dr-sum" id="drSum">Σ 24.1 MB/s ↓ · 3.2 MB/s ↑ · next finishing in ~12 min</div>
+  <div class="dr-list" id="drList"></div>
+  <div class="dr-foot">Queue is priority-sorted: your clicks first, crew requests second, seeding last.</div>
+</aside>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const G={
+ wukong:{t:"BLACK MYTH: WUKONG",scene:"s1",yr:2024,tags:["Action","Soulslike","Mythology"],was:"$59.99",gb:"41",group:"RUNE",seeds:"812 / 96",
+  desc:"The Journey to the West as a river of fists. Every staff stance feels earned, every Yaoguai boss a lesson. Community pack verified clean, trimmed from 118 GB to 41 without cutting a single frame."},
+ silksong:{t:"HOLLOW KNIGHT: SILKSONG",scene:"s2",yr:2025,tags:["Metroidvania"],was:"$19.99",gb:"9.4",group:"RUNE",seeds:"1,902 / 121",
+  desc:"Hornet sings in a kingdom of silk and rust. Faster, sharper, crueler than its elder — and somehow more graceful."},
+ gtavi:{t:"GRAND THEFT AUTO VI",scene:"s6",yr:2026,tags:["Open World","Crime"],was:"$69.99",gb:"104",group:"DODI",seeds:"1,204 / 340",
+  desc:"Leonida wears blush at dawn. Two protagonists, one swollen coastline, and the longest queue in piracy history — thankfully 1,204 seeds deep."},
+ ff7r:{t:"FINAL FANTASY VII REBIRTH",scene:"s4",yr:2024,tags:["JRPG","Adventure"],was:"$69.99",gb:"88",group:"FITGIRL",seeds:"194 / 22",
+  desc:"The middle chapter of the trilogy, expansive and heartbroken in equal measure. Pack retains every FMV in lossless glory."},
+ dl2:{t:"DYING LIGHT 2",scene:"s7",yr:2022,tags:["Parkour","Horror"],was:"$39.99",gb:"58",group:"DODI",seeds:"233 / 41",
+  desc:"The city remembers gravity, and so will you. Next-gen update bundled — Brutal nights included at no charge, as everything here is."},
+ bg3:{t:"BALDUR'S GATE 3",scene:"s3",yr:2023,tags:["CRPG","Co-op"],was:"$59.99",gb:"96",group:"DODI",seeds:"880 / 150",
+  desc:"Roll for initiative, then for custody of your weekend. Patched to latest, co-op wired for four, dice physics mercifully included."},
+ rk:{t:"SEKIRO: SHADOWS DIE TWICE",scene:"s5",yr:2019,tags:["Action","FromSoftware"],was:"$59.99",gb:"18",group:"RUNE",seeds:"310 / 33",
+  desc:"Hesitation is defeat. Learning rhythm as combat, Japan as painting. Small pack, endless deaths."},
+ ow2:{t:"OUTER WILDS",scene:"s2",yr:2019,tags:["Exploration","Mystery"],was:"$24.99",gb:"8",group:"CHRONOS",seeds:"151 / 12",
+  desc:"A solar system trapped in 22 minutes. Knowledge is the only progression — DLC voyages included."},
+ cs:{t:"CIVILIZATION VII",scene:"s8",yr:2025,tags:["Strategy","4X"],was:"$69.99",gb:"33",group:"RUNE",seeds:"141 / 18",
+  desc:"One more turn, now with ages that actually end. Legacy paths rebalanced; friendships optional."},
+ kc2:{t:"KINGDOM COME: DELIVERANCE II",scene:"s4",yr:2025,tags:["RPG","Historical"],was:"$59.99",gb:"74",group:"FITGIRL",seeds:"268 / 31",
+  desc:"Bohemia, mud and every manner of sword. Hardcore mode baked in from boot."},
+ hk:{t:"HOLLOW KNIGHT",scene:"s3",yr:2017,tags:["Metroidvania"],was:"$14.99",gb:"7",group:"GOG-RIP",seeds:"502 / 60",hours:41,
+  desc:"Hallownest deserves its legend. Install and descend."},
+ sv:{t:"STARDEW VALLEY",scene:"s3",yr:2016,tags:["Farm Sim","Co-op"],was:"$14.99",gb:"1.2",group:"GOG-RIP",seeds:"310 / 44",hours:128,
+  desc:"The valley provides. Co-op farm continues exactly where you left it."},
+ hd2:{t:"HADES II",scene:"s6",yr:2024,tags:["Roguelike"],was:"$29.99",gb:"11",group:"EARLY-ACCESS",seeds:"288 / 25",dl:41,hours:17,
+  desc:"Melinoë takes the family business further down."},
+ cel:{t:"CELESTE",scene:"s5",yr:2018,tags:["Platformer"],was:"$19.99",gb:"1.2",group:"GOG-RIP",seeds:"77 / 8",hours:22,
+  desc:"Madeline versus the mountain. Assist mode honors every player."},
+ dew:{t:"DISCO ELYSIUM",scene:"s7",yr:2019,tags:["CRPG","Detective"],was:"$39.99",gb:"19",group:"GOG-RIP",seeds:"120 / 15",hours:9,
+  desc:"Fail spectacularly, philosophically, repeatedly."},
+ edrin:{t:"ELDEN RING: NIGHTREIGN",scene:"s1",yr:2025,tags:["Soulslike","Co-op"],was:"$39.99",gb:"32",group:"RUNE",seeds:"195 / 28",
+  desc:"Three tarnished, one shrinking map, two insomniac nights."},
+ mhw:{t:"MONSTER HUNTER WILDS",scene:"s3",yr:2025,tags:["Action","Co-op"],was:"$69.99",gb:"68",group:"DODI",seeds:"212 / 35",
+  desc:"Weather fronts as boss mechanics. Herds that migrate."},
+ sub2:{t:"SUBNAUTICA 2",scene:"s2",yr:2026,tags:["Survival","Ocean"],was:"$39.99",gb:"16",group:"DAY-ONE",seeds:"88 / 14",
+  desc:"Below zero, further down. Thalassophobia guaranteed or refunded — ha."},
+ hel2:{t:"HELLDIVERS 2",scene:"s6",yr:2024,tags:["Co-op","Shooter"],was:"$39.99",gb:"24",group:"DAY-ONE",seeds:"455 / 52",
+  desc:"Democracy, delivered sideways, at altitude."}
+};
+const DECKS=[
+ {n:"PlayStation 2",cnt:"1,843 discs",core:"PCSX2 · 4× upscale",scene:"s7",health:"Healthy"},
+ {n:"Nintendo Switch",cnt:"318 titles",core:"Ryujinx · HD pack",scene:"s6",health:"Healthy"},
+ {n:"GC + Wii",cnt:"312 titles",core:"Dolphin · textures on",scene:"s2",health:"Healthy"},
+ {n:"Game Boy Archive",cnt:"2,914 carts",core:"mGBA · original ratios",scene:"s3",health:"Healthy"},
+ {n:"SNES Chest",cnt:"1,102 carts",core:"bsnes · accuracy core",scene:"s5",health:"Checking shaders…"},
+ {n:"Dreamcast Room",cnt:"198 GD-ROMs",core:"Flycast · 60 fps",scene:"s4",health:"Healthy"}
+];
+const CREW=[
+ {n:"Maya Chen",i:"M",c:"#e11d48",st:"playing Portal 2 — streamed from your rig",on:"on"},
+ {n:"Tom Alvarez",i:"T",c:"#059669",st:"installed 4 games today · 86 GB",on:"on"},
+ {n:"Priya S.",i:"P",c:"#7c3aed",st:"requested Deep Rock Galactic — approve?",on:"ig"},
+ {n:"Sam O'Dell",i:"S",c:"#d97706",st:"idle · borrowed Blade Runner 2049",on:"off"},
+ {n:"Ellie Kim",i:"E",c:"#0891b2",st:"mirrors her own cabin · offline since Sun",on:"off"}
+];
+
+/* ============================================================
+   RENDER HELPERS
+============================================================ */
+function sunFor(sc){
+ return {s1:'top:8%;right:6%;width:16%;background:radial-gradient(circle,#ffe0b0,#ff9540 60%,transparent)',
+  s2:'top:22%;left:12%;width:10%;background:radial-gradient(circle,#d8f4ff,#6db8d8 55%,transparent)',
+  s4:'top:10%;right:10%;width:12%;background:radial-gradient(circle,#e8d0ff,#9a5ae0 60%,transparent)',
+  s5:'top:6%;left:26%;width:13%;background:radial-gradient(circle,#ffe6b8,#e8a040 60%,transparent)',
+  s6:'top:14%;right:16%;width:11%;background:radial-gradient(circle,#ffc0cc,#e0406a 60%,transparent)',
+  s8:'top:12%;left:20%;width:12%;background:radial-gradient(circle,#e0fff4,#2ec5a0 55%,transparent)'}[sc]||
+ 'top:9%;right:9%;width:12%;background:radial-gradient(circle,#fff0d0,#e09040 55%,transparent)';
+}
+function artEl(sc,t2){return '<div class="art '+sc+'"><div class="orbsun" style="'+sunFor(sc)+'"></div>'+
+ (sc==='s2'||sc==='s4'?'<div class="beam"></div>':'')+'<div class="ridge2"></div><div class="haze"></div><div class="ridge"></div></div>'}
+function esc(s){return s.replace(/'/g,"&#39;")}
+function go(view,id){
+ location.hash=id?view+"/"+id:view;
+}
+function route(){
+ let h=(location.hash||"#home").slice(1);
+ let [view,id]=h.split("/");
+ if(view==="detail"&&(!id||!G[id])){view="home"}
+ if(!document.getElementById("pg-"+view)){view="home"}
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
+ document.getElementById("pg-"+view).classList.add("on");
+ document.querySelectorAll(".nl").forEach(a=>a.classList.toggle("on",a.dataset.go===view||(view==="detail"&&a.dataset.go==="home")));
+ scrollTo({top:0});
+ if(view==="detail")renderDetail(id);
+ if(view==="library")renderLib();
+ if(view==="crew")renderCrew();
+}
+addEventListener("hashchange",route);
+
+function seedNum(s){return parseInt(String(s).replace(/,/g,""))||0}
+/* games already living on the captain's rig — crew can LAN-pull these instantly */
+const OWNER_HAS=new Set(["hk","sv","cel","dew","bg3","rk","ow2","wukong"]);
+/* ALL downloads happen ship-side (seedbox or the captain's client) — friends only ever
+   pull finished copies from the ship. CREW_MODE shows that lens. */
+let CREW_MODE=false,curView='home';
+function shipChip(st){
+ if(st==="inst")return '<span class="shipchip ok">◆ ON SHIP — INSTANT</span>';
+ if(st==="dl")return '<span class="shipchip wait">◐ SHIP FETCHING</span>';
+ return '<span class="shipchip req">◇ REQUEST</span>';
+}
+function setMode(c){
+ CREW_MODE=c;
+ document.getElementById('segOwner').classList.toggle('on',!c);
+ document.getElementById('segCrew').classList.toggle('on',c);
+ fillHome();drawDl();
+ if(curView==='detail')renderDetail(detId);
+ if(curView==='library')renderLib();
+ toast(c?'Now seeing the app as <b>crew</b> — one-click, never a torrent client in sight'
+        :'Now seeing the app as <b>captain</b> — swarms, packs and the fetch pipeline');
+}
+function artCard(id,size,mode){
+ const g=G[id];if(!g)return "";
+ const st=mode||gState(id);
+ const badge=st==="dl"?'<span class="statepill dl">DL '+g.dl+'%</span>':st==="inst"?'<span class="statepill inst">INSTALLED</span>':"";
+ const btns=(st==="inst"?'<div class="circ filled" data-play="'+esc(g.t)+'">▶</div>':'<div class="circ" data-play="'+esc(g.t)+'">▶</div>')+
+   '<div class="circ" data-plus="'+esc(g.t)+'">+</div><div class="circ push" onclick="go(\'detail\',\''+id+'\')">ⓘ</div>';
+ return '<div class="card '+size+'" data-card="'+id+'">'+artEl(g.sc)+
+  (st==="dl"?'<div class="redbar" style="width:'+g.dl+'%"></div>':'')+
+  badge+
+  '<div class="card-foot"><div class="cf-top">'+btns+'</div>'+
+  (size==="post"?"":'<div class="cf-title">'+g.t+'</div>')+
+  '<div class="cf-line">'+(CREW_MODE?shipChip(st):'<span class="seed">▲ '+seedNum(g.seeds).toLocaleString()+'</span>')+
+  (g.hours?'<span>'+g.hours+' hrs played</span>':'<span>'+g.gb+' GB</span>')+
+  '</div></div></div>';
+}
+function gState(id){
+ const installed=["hk","sv","cel","dew","bg3","rk","ow2"];
+ if(installed.includes(id))return "inst";
+ if(G[id].dl)return "dl";
+ return "new";
+}
+function topCard(n,id){
+ const g=G[id];
+ return '<div style="position:relative;flex:none;display:flex;align-items:flex-end"><span class="bigrank bebas">'+n+'</span>'+
+  '<div class="card" data-card="'+id+'">'+artEl(g.sc)+
+  '<div class="card-foot"><div class="cf-top"><div class="circ" onclick="go(\'detail\',\''+id+'\')">ⓘ</div></div>'+
+  '<div class="cf-title">'+g.t+'</div><div class="cf-line">'+(CREW_MODE?shipChip('new'):'<span class="seed">▲ '+seedNum(g.seeds).toLocaleString()+'</span>')+'<span>'+g.gb+' GB</span></div></div></div></div>';
+}
+function postCard(id){const g=G[id];
+ return '<div class="card post" data-card="'+id+'">'+artEl(g.sc)+'<div class="t-inart">'+g.t+'</div><div class="card-shade"></div>'+
+ '<div class="card-foot"><div class="cf-line">'+(CREW_MODE?shipChip(gState(id)):'<span class="seed">▲ '+seedNum(g.seeds).toLocaleString()+'</span>')+'<span>'+g.gb+' GB</span>'+
+ '<span style="margin-left:auto;font-size:10px;color:#bbb">'+g.yr+'</span></div></div></div>';
+}
+function deckChip(d){
+ return '<div class="card sm" data-deck="'+d.n+'"><div class="art" style="position:absolute;inset:0">'+artInnerOnly(d)+'</div>'+
+ '<div class="t-inart" style="font-size:20px;top:10px">'+d.n.toUpperCase()+'</div>'+
+ '<div class="card-foot"><div class="cf-line"><span class="seed">'+d.cnt+'</span><span style="margin-left:auto">'+d.core.split(" · ")[0]+'</span></div></div></div>';
+}
+function artInnerOnly(d){return artEl(d.sc)}
+
+/* ---- home rows ---- */
+function fillHome(){
+document.getElementById('s-cont').innerHTML=["hk","sv","cel","dew","ow2"].map(id=>artCard(id,"land")).join("")+
+ '<div class="card land" data-deck="open" style="display:grid;place-items:center"><div style="font-size:13px;color:var(--dim)"> Browse everything →</div></div>';
+(function(){let out="",n=0;["wukong","silksong","gtavi","ff7r","dl2","bg3"].forEach(id=>{out+=topCard(++n,id)});
+ document.getElementById('s-ten').innerHTML=out})();
+document.getElementById('s-new').innerHTML=["edrin","mhw","cs","kc2","sub2","hel2"].map(postCard).join("");
+document.getElementById('s-deck').innerHTML=DECKS.slice(0,5).map(deckChip).join("");
+}
+fillHome();
+
+/* billboard rotate */
+const BBK=[["RELEASE OF THE WEEK","wukong"],["MOST WANTED SWARM","gtavi"],["INDIE DARLING OF THE MONTH","hd2"]];
+let bk=0;
+setInterval(()=>{bk=(bk+1)%BBK.length;const [kick,id]=BBK[bk];const g=G[id];
+ const a=document.getElementById('bbArt');a.style.opacity=.15;
+ setTimeout(()=>{a.innerHTML=artEl(g.sc);a.style.opacity=1},320);
+ document.getElementById('bbKick').textContent=kick;
+ document.getElementById('bbTitle').textContent=g.t;
+ document.getElementById('bbDesc').textContent=g.desc;
+ document.getElementById('bbMeta').innerHTML='<span class="star">★ '+(4.6+Math.random()*.3).toFixed(1)+'</span><span>'+g.yr+'</span>'+
+  '<span class="chip free">AVAILABLE</span><span class="chip ok">SCAN CLEAN</span><span class="chip">'+g.gb+' GB PACK</span><span class="chip">'+g.seeds.split(" /")[0]+' SEEDS</span>';
+ const b=document.getElementById('bbPlay');b.className='bb-play';b.innerHTML='↓ Get It';delete b.dataset.on;
+},9000);
+function bbGo(){const b=document.getElementById('bbPlay');
+ if(b.dataset.on)return;b.dataset.on=1;b.className='bb-play busy';b.innerHTML='✓ On Board — agent preparing';
+ toast('<b>Grabbing the swarm</b> · 812 seeds responding, recipe queued');setTimeout(openDrawer,900);}
+
+/* ---- LIBRARY ---- */
+const libFilters=[["all","All"],["inst","Installed"],["dl","Downloading"],["fav","Favorites"],["backing","Cloud backups"]];
+let libFilterSel="all";
+function renderLib(){
+ document.getElementById('libFilters').innerHTML=libFilters.map(f=>'<button class="fchip'+(f[0]===libFilterSel?' on':'')+'" data-lf="'+f[0]+'">'+f[1]+'</button>').join('');
+ const q=(document.getElementById('libQ').value||"").trim().toLowerCase();
+ let libIds=["hk","sv","cel","dew","bg3","rk","ow2","hd2","dl2","silksong","gtavi"];
+ if(libFilterSel==="inst")libIds=libIds.filter(id=>gState(id)==="inst");
+ if(libFilterSel==="dl")libIds=libIds.filter(id=>gState(id)==="dl");
+ if(libFilterSel==="fav")libIds=["hk","bg3","cel"];
+ if(libFilterSel==="backing")libIds=[];
+ if(q)libIds=libIds.filter(id=>G[id].t.toLowerCase().includes(q)||G[id].tags.some(t=>t.toLowerCase().includes(q)));
+ if(!libIds.length){document.getElementById('libGrid').innerHTML='<div style="grid-column:1/-1;color:var(--dim);font-size:13.5px;padding:30px 0">Nothing in the hold matches — try a shorter fragment, or different filter.</div>';}
+ else document.getElementById('libGrid').innerHTML=libIds.map(id=>{
+  const g=G[id];const st=gState(id);
+  return '<div class="gcard" data-card="'+id+'">'+artEl(g.sc)+'<div class="t-inart">'+g.t+'</div><div class="gshade"></div>'+
+   '<div class="gplay"><div class="bigplay">▶</div></div>'+
+   '<div class="gf"><b>'+g.t+'</b><small>'+(st==="inst"?('ready'+(g.hours?' · '+g.hours+' hrs played':'')):st==="dl"?'downloading — '+g.dl+'%':'peek at swarm')+'</small>'+
+   (st==="dl"?'<div class="gbar"><i style="width:'+g.dl+'%"></i></div>':'')+'</div></div>';
+ }).join("");
+}
+document.getElementById('libQ').addEventListener('input',renderLib);
+document.getElementById('libFilters').addEventListener('click',e=>{
+ const b=e.target.closest('[data-lf]');if(!b)return;
+ libFilterSel=b.dataset.lf;renderLib();
+});
+
+/* ---- CABINETS (folded into home row) ---- */
+
+/* ---- CREW ---- */
+function renderCrew(){
+ document.getElementById('crewGrid').innerHTML=CREW.map(m=>
+  '<div class="mem"><div class="bigface" style="background:'+m.c+'">'+m.i+'<span class="presence pr-'+m.on+'"></span></div>'+
+  '<div><b>'+m.n+'</b><small>'+m.st+'</small></div>'+
+  '<button class="dlab" style="margin-left:auto" onclick="toast(\'Managing <b>'+m.n.split(" ")[0]+'</b>… permissions, limits, revoke\')">⋯</button></div>').join("");
+ document.getElementById('crewTL').innerHTML=[
+  ["Today · 21:14","<b>Maya</b> streamed <b>Portal 2</b> from your rig for 46 minutes"],
+  ["Today · 19:02","<b>Tom</b> installed <b>Baldur's Gate 3</b> — pulled from your shares"],
+  ["Yesterday · 22:41","<b>Priya</b> requested <b>Deep Rock Galactic</b> — <u style='color:#ffb0a8;cursor:pointer'>approve</u> or deny"],
+  ["Tue · 20:15","<b>Sam</b> copied <b>Blade Runner 2049</b> · 41 GB over Tailscale"],
+  ["Mon · 18:33","Rotating passphrase <b>ANCHOR-66</b> retired automatically"]
+ ].map(x=>'<div class="tl-item"><div class="when">'+x[0]+'</div><p>'+x[1]+'</p></div>').join("");
+}
+function rotPass(){document.getElementById('passcode').textContent='ANCHOR-'+Math.floor(10+Math.random()*89)}
+
+/* ---- DETAIL ---- */
+let detId=null;
+function renderDetail(id){
+ detId=id;const g=G[id];
+ document.getElementById('detArt').innerHTML=artEl(g.sc);
+ document.getElementById('dtTitle').textContent=g.t;
+ document.getElementById('dtTags').innerHTML='<span class="chip free">AVAILABLE</span>'+g.tags.map(t=>'<span class="chip">'+t+'</span>').join("")+
+  '<span class="chip">'+g.yr+'</span><span class="chip ok">SCAN CLEAN</span><span class="chip">'+g.gb+' GB</span>';
+ document.getElementById('dtDesc').textContent=g.desc;
+ document.getElementById('dtShots').innerHTML=[g.sc,sOneOff(g.sc),sOneOff(g.sc,true)].map(sc=>
+  '<div class="shot"><div class="art">'+artEl(sc)+'</div></div>').join("");
+ document.getElementById('dtEds').innerHTML=[
+  ["FitGirl repack","super-compressed · slower first boot","8.2 GB",'462',"~14 min"],
+  [g.group+" full release","lossless · instant play",""+g.gb+" GB",'812',"~26 min"],
+  ["Community modded","+ HD textures + tweaks pre-applied",(parseFloat(g.gb)*1.4).toFixed(1)+" GB",'121',"~31 min"]
+ ].map((e,i)=>'<div class="edition'+(i===1?' sel':'')+'" data-ed="'+i+'"><div><b>'+e[0]+'</b><small>'+e[1]+'</small></div>'+
+  '<div class="ed-seeds">▲ '+e[3]+'</div><div class="ed-time">'+e[2]+' · ~'+e[4]+'</div></div>').join("");
+ document.getElementById('dtSeeds').textContent=g.seeds;
+ document.getElementById('dtGroup').textContent=g.group;
+ /* availability head — swaps to DIRECT when the stash has it */
+ const avail=document.getElementById('dtAvail'),availSub=document.getElementById('dtAvailSub');
+ if(OWNER_HAS.has(id)){avail.textContent='ON THE SHIP';availSub.textContent='DIRECT DOWNLOAD AVAILABLE · INSTANT'}
+ const steps=[["Verify swarm & scan package",1],["Pull "+g.gb+" GB via qBittorrent",1],["Unpack & integrity check",1],
+  ["Apply release install recipe",1],["Register in library + shortcuts",0],["First-boot validation",0]];
+ document.getElementById('dtRecipe').innerHTML=steps.map(s=>'<div class="rstep '+(s[1]?'done':'run')+'"><span class="tick">'+(s[1]?'✓':'◌')+'</span>'+s[0]+'</div>').join("");
+ /* direct-from-server lane */
+ const dh=document.getElementById('dtDirect');
+ if(OWNER_HAS.has(id)){
+  const mins=Math.max(1,Math.round(parseFloat(g.gb)*9.14/60)); /* 1 GB ≈ 9.1 s at ~112 MB/s */
+  dh.style.display="block";
+  dh.innerHTML='<div class="direct-card"><div class="dc-badge">⚡ DIRECT FROM CAPTAIN\'S STASH</div>'+
+   '<div class="dc-copy"><b>This game already lives on Sam\'s rig.</b><span>Skip the swarm entirely — pull it over LAN / Tailscale at wire speed, already patched and install-ready.</span>'+
+   '<div class="dc-stats"><span class="ok">~112 MB/s</span><span>ETA ~'+mins+' min for '+g.gb+' GB</span><span class="ok">0 cold seeds needed</span></div></div>'+
+   '<button class="dc-go" onclick="directPull(\''+id+'\')">⚡ Direct Download</button></div>';
+ }else{dh.style.display="none";dh.innerHTML=""}
+ const btn=document.getElementById('dtGet');
+ btn.className='btn-big btn-white';btn.textContent='↓ Get It';btn.dataset.on="";
+}
+document.getElementById('dtEds').addEventListener('click',e=>{
+ const ed=e.target.closest('.edition');if(!ed)return;
+ document.querySelectorAll('.edition').forEach(x=>x.classList.remove('sel'));ed.classList.add('sel');
+});
+document.getElementById('dtGet').addEventListener('click',function(){
+ if(this.dataset.on)return;this.dataset.on=1;
+ this.className='btn-big btn-ok';this.textContent='✓ In queue — recipe armed';
+ toast('<b>'+G[detId].t+'</b> added · swarm healthy · agent standing by');
+ setTimeout(openDrawer,800);
+});
+function sOneOff(sc,flip){
+ const pool=["s1","s2","s3","s4","s5","s6","s7","s8"].filter(x=>x!==sc);
+ return flip?pool[(pool.length-1+Math.floor(Math.random()*2))%pool.length]:pool[Math.floor(Math.random()*pool.length)];
+}
+/* crew pulls straight off the captain's stash */
+function directPull(id){
+ const g=G[id];
+ toast('<b>'+g.t+'</b> — pulling directly from the ship at LAN speed ⚡');
+ const btn=document.getElementById('dtGet');
+ btn.className='btn-big btn-ok';btn.textContent='✓ Direct transfer running';
+ setTimeout(openDrawer,700);
+}
+
+/* ---- DRAWER ---- */
+const DLQ=[
+ {n:"Hollow Knight: Silksong",m:"TorrentLeech · ▲ 1,902 · 9.4 GB",p:38},
+ {n:"Dying Light 2",m:"IPTorrents · ▲ 233 · 71.9 GB",p:64},
+ {n:"GTA VI",m:"1337x · ▲ 1,204 · 104 GB",p:11}];
+function drawDl(){
+ document.getElementById('dlCount').textContent=DLQ.filter(d=>!d.pau).length;
+ document.getElementById('drList').innerHTML=DLQ.map((d,i)=>
+  '<div class="dlrow"><div class="top"><b>'+d.n+'</b><span class="pc">'+Math.floor(d.p)+'%</span></div>'+
+  '<div class="meta">'+d.m+(d.pau?' · paused by you':' · '+ (5+Math.random()*4).toFixed(1)+' MB/s')+'</div>'+
+  '<div class="dlbar2 '+(d.pau?'paused':'')+'"><i style="width:'+d.p+'%"></i></div>'+
+  '<div class="dl-acts"><button class="dlab" onclick="tgl('+i+')">'+(d.pau?'▶ Resume':'❙❙ Pause')+'</button>'+
+  '<button class="dlab" onclick="pri('+i+',1)">↑ Priority</button>'+
+  '<button class="dlab warn" onclick="cnl('+i+')">✕ Remove</button></div></div>').join("");
+}
+function tgl(i){DLQ[i].pau=!DLQ[i].pau;drawDl()}
+function pri(i){DLQ.unshift(DLQ.splice(i,1)[0]);drawDl();toast('Moved to front of the queue')}
+function cnl(i){const d=DLQ.splice(i,1)[0];drawDl();toast('<b>'+d.n+'</b> removed — original magnets stay bookmarked')}
+function openDrawer(){document.getElementById('drawer').classList.add('open')}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open')}
+drawDl();
+setInterval(()=>{DLQ.forEach(d=>{if(!d.pau&&d.p<100)d.p+=Math.random()*.5});drawDl()},1500);
+
+/* ---- SETTINGS numctl ---- */
+function num(btn,d){
+ const v=btn.parentNode.querySelector('b');
+ v.textContent=Math.max(1,Math.min(8,+v.textContent+d));
+}
+
+/* ---- global delegation ---- */
+document.addEventListener('click',e=>{
+ const goa=e.target.closest('[data-go]');
+ if(goa&&!e.target.closest('.card')){location.hash=goa.dataset.go;return}
+ const card=e.target.closest('[data-card]');
+ if(card&&!e.target.closest('.circ')){
+  if(e.target.closest('.gplay')){toast('<b>'+G[card.dataset.card].t+'</b> launching — 3 hrs uninterrupted, ideally.');return}
+  go('detail',card.dataset.card);return}
+ const dk=e.target.closest('[data-deck]');
+ if(dk){toast('Deck <b>'+dk.dataset.deck+'</b> — full cabinet browser next iteration');return}
+ const pl=e.target.closest('[data-play]');
+ if(pl){toast('<b>'+pl.dataset.play+'</b> — press START when you\'re ready');return}
+ const ps=e.target.closest('[data-plus]');
+ if(ps){toast('<b>'+ps.dataset.plus+'</b> queued — check the ⇣ drawer')}
+});
+addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('solid',scrollY>60)});
+document.getElementById('segOwner').addEventListener('click',()=>setMode(false));
+document.getElementById('segCrew').addEventListener('click',()=>setMode(true));
+
+/* toast */
+function toast(html){const t=document.getElementById('toast');t.innerHTML=html;t.classList.add('show');
+ clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2800)}
+
+/* search */
+document.getElementById('q').addEventListener('keydown',e=>{
+ if(e.key==='Enter'&&e.target.value.trim()){
+  const hit=Object.keys(G).find(k=>G[k].t.toLowerCase().includes(e.target.value.toLowerCase()));
+  toast(hit?'Found <b>'+G[hit].t+'</b> — opening…':'Nothing matched "<b>'+e.target.value+'</b>" — try fewer letters');
+  if(hit)setTimeout(()=>go('detail',hit),600);
+ }});
+
+(function(){const v=new URLSearchParams(location.search).get('v');if(v)location.hash=v})();
+route();
+</script>
+</body>
+</html>

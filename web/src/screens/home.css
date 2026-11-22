@@ -1,0 +1,27 @@
+/* Home (/): M/mine/livefan/Main.dc.html. One screen, the window tall: the spotlight (ui/spotlight.tsx draws it), the
+   friends who are on under the bar, the fan of generated cards at the bottom (screens/home-fan.tsx). */
+
+/* overflow: clip, not hidden: the cards reach past the bottom edge, and focusing one (Tab, the arrows) must not scroll */
+.home { position: relative; height: 100vh; overflow: clip; isolation: isolate; }
+
+/* ── the friends who are on: 24 under the bar, chips 28 apart (avatar 32, the game 600, how long 500 grey). They stay in the
+      spotlight's text column (its stage is 660 wide), where its scrims keep text readable; past it the art comes through
+      (a fourth chip over DARK SOULS III's knight read at 1.4:1), so the rest fold into +N (home.tsx CHIPS_MAX) ── */
+.home-who { position: absolute; left: var(--page-x); top: calc(var(--bar-h) + 24px); z-index: 2; display: flex; align-items: center; gap: 28px; height: 44px; max-width: min(660px, calc(100% - var(--page-x) - var(--page-r))); }
+.home-chip { display: flex; align-items: center; gap: 12px; height: 44px; white-space: nowrap; font-size: 15px; line-height: 20px; border-radius: 12px; transition: filter .15s var(--ease); }
+.home-chip-t { display: inline-flex; gap: 8px; }
+.home-chip-t b { font-weight: 600; color: var(--fg); }
+.home-chip-t span { font-weight: 500; color: var(--fg-2); }
+.home-chip-t i { font-style: normal; font-weight: 600; color: var(--fg-2); }
+.home-chip:hover { filter: brightness(1.12); }
+.home-chip:hover .home-chip-t i, .home-chip:hover .home-chip-t span { color: var(--fg); }
+.home-more { display: grid; place-items: center; width: 32px; height: 32px; margin: 6px 0; border-radius: 10px; border: 1px solid var(--hair-5); background: var(--raised); color: var(--fg-2); font: 600 13px/1 var(--ui); transition: color .15s var(--ease); }
+.home-more:hover { color: var(--fg); }
+
+/* ── waiting, empty, unreachable: the stage's place, no fan ── */
+.home-wait { position: absolute; inset: 0; display: grid; place-items: center; }
+/* the stage with no art: the hero placeholder's ground, the words standing where a title stands, the action under them */
+.home-empty { position: relative; height: 100vh; background: linear-gradient(180deg, #1c1c1c 0, var(--bg) 620px); }
+.home-empty-in { position: absolute; left: var(--page-x); top: calc(380px + var(--bar-h) - 148px); width: min(580px, calc(100% - var(--page-x) - var(--page-r))); }
+.home-empty h1 { position: absolute; left: 0; bottom: 100%; width: 100%; margin: 0; font: 800 44px/1.06 var(--display); letter-spacing: -.02em; color: var(--fg); text-wrap: balance; }
+.home-empty .spot-acts { margin-top: 36px; }
