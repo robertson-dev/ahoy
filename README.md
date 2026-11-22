@@ -99,7 +99,7 @@ sketches/    static design explorations for the UI
 
 The desktop app lives in its own repo: **[ahoy-launcher](https://github.com/robertson-dev/ahoy-launcher)**.
 
-## 🛠️ Development
+## 🔧 Development
 
 ```sh
 # server (:8790)
