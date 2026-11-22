@@ -13,7 +13,7 @@
 [![Docker](https://img.shields.io/badge/deploy-Docker%20%2F%20Unraid-2496ed?logo=docker&logoColor=white)](#-deploy)
 [![Version](https://img.shields.io/badge/server-0.2.0-6b5bff)](server/package.json)
 
-[Features](#-features) · [How it fits together](#-how-it-fits-together) · [Quick start](#-quick-start) · [First run](#-first-run) · [Development](#-development) · [Deploy](#-deploy)
+[Quick setup](#-quick-setup) · [Features](#-features) · [How it fits together](#-how-it-fits-together) · [Development](#-development) · [Deploy](#-deploy)
 
 </div>
 
@@ -22,6 +22,37 @@
 Ahoy is one container with a web UI, a REST API and a self-updating Windows launcher. The finding, downloading and
 preparing of games is done by **[Ludarr](https://github.com/robertson-dev/ludarr)** (the engine, formerly playarr, then arcadearr) in
 its own container. Ahoy is its only client and the only thing that holds its API key.
+
+## ⚡ Quick setup
+
+From nothing to people playing. You need Docker and a running
+[Ludarr](https://github.com/robertson-dev/ludarr#-quick-setup), with its address and API key at hand.
+
+1. **Build and start it.**
+
+   ```sh
+   git clone https://github.com/robertson-dev/ahoy.git && cd ahoy
+   docker build -t ahoy .
+   docker run -d --name ahoy -p 8790:8790 -v ./config:/config ahoy
+   ```
+
+   On Unraid, `deploy/unraid.py` does this step (see [Deploy](#-deploy)).
+
+2. **Read the setup code.** The server prints a six-character code at boot (`docker logs ahoy`) and writes it to
+   `config/setup-code.txt`.
+3. **Make the admin account.** Open `http://<host>:8790` and sign up with that code. The first person in is the
+   admin.
+4. **Connect the engine.** As the last step of signing up, enter Ludarr's address and its API key (*Settings →
+   General* in Ludarr). Give the address as the host's, such as `http://<host>:7979`: `localhost` would be Ahoy's own
+   container. Both stay on the server, members only see whether the engine is up, and until it is they wait outside.
+5. **Publish the launcher.** Build [ahoy-launcher](https://github.com/robertson-dev/ahoy-launcher) with
+   `bun run dist` and copy the installer, `latest.yml` and the `.blockmap` from its `release/` folder into
+   `config/launcher/`. The front page then offers the installer, and installed launchers update from it.
+6. **Invite people.** *Settings → Who can join*: hand out invite codes, or open or close the door entirely. Each
+   person opens the server's address in a browser, gets the launcher there, enters the address in it and signs up.
+
+A browser that is not signed in sees the front page: what Ahoy is, the launcher download, the server address to enter
+and the steps.
 
 ## ✨ Features
 
@@ -67,24 +98,6 @@ sketches/    static design explorations for the UI
 ```
 
 The desktop app lives in its own repo: **[ahoy-launcher](https://github.com/robertson-dev/ahoy-launcher)**.
-
-## 🚀 Quick start
-
-```sh
-docker build -t ahoy .
-docker run -d --name ahoy -p 8790:8790 -v ./config:/config ahoy
-```
-
-Open `http://<host>:8790`. A browser that is not signed in sees the front page: what Ahoy is, the launcher download,
-the server address to enter and the steps.
-
-## 🔑 First run
-
-1. **Setup code.** The server prints a six-character code at boot (also written to `<config>/setup-code.txt`).
-2. **The admin.** The first person to sign up enters that code and becomes the admin.
-3. **Connect the engine.** As the last step the admin enters the engine's address and API key. Both stay on the
-   server: members only see whether the engine is up, and until it is they wait outside.
-4. **Invite people.** *Settings → Who can join*: hand out invite codes, or open or close the door entirely.
 
 ## 🛠️ Development
 
