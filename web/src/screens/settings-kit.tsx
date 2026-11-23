@@ -117,7 +117,8 @@ export function HueSlider({ id, hue, onChange }: { id: string; hue: number; onCh
   const track = `linear-gradient(90deg, ${HUE_STOPS.map(h => `hsl(${h} 65% 72%) ${at(h)}`).join(", ")})`;
   return (
     <span className="st-hue">
-      <input id={id} type="range" min={0} max={359} step={1} value={hue} onChange={e => onChange(Number(e.target.value))} aria-label="Colour" />
+      {/* data-pad-solid: drawn see-through under its own track and knob, and still a stop for a pad (big/pad.ts) */}
+      <input id={id} type="range" min={0} max={359} step={1} value={hue} onChange={e => onChange(Number(e.target.value))} aria-label="Colour" data-pad-solid="" />
       <span className="st-hue-track" style={{ background: track }} aria-hidden />
       <span className="st-hue-thumb" style={{ left: `calc(${(hue / 359).toFixed(4)} * (100% - 20px))` }} aria-hidden />
     </span>

@@ -59,7 +59,8 @@ export function SearchPill({ value, onChange, onSubmit, inputRef }: { value: str
   return (
     <form className="fpill tb-search" role="search" onSubmit={e => { e.preventDefault(); onSubmit(); }} onClick={e => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}>
       <Icon name="search" size={18} className="fpill-ic" />
-      <input ref={inputRef} type="search" value={value} placeholder="Search games" aria-label="Search any game" onChange={e => onChange(e.target.value)}
+      {/* data-pad-solid: a pad can rest on it though a narrow window draws it see-through (the pill folded to its icon) */}
+      <input ref={inputRef} type="search" value={value} placeholder="Search games" aria-label="Search any game" data-pad-solid="" onChange={e => onChange(e.target.value)}
         onKeyDown={e => { if (e.key === "Escape") { onChange(""); (e.target as HTMLInputElement).blur(); } }} />
       {!value && <kbd className="tb-key" aria-hidden>/</kbd>}
     </form>

@@ -11,6 +11,10 @@
  *   a thing with its own      the element says so (aria-keyshortcuts="ArrowLeft ArrowRight", a listbox's Up and Down, a
  *   arrow keys                radio's and a slider's Left and Right): the pad's direction is sent to it as that key instead
  *                             of moving on; when the key changes nothing (it was at its end) the pad moves on after all
+ *   the top bar               stays in the window while the page scrolls under it: a strip of its own, reached from the
+ *                             page's first row and left downwards to what is on screen (PadNav.move)
+ *   a card's own action       the pill that appears on a hovered card (Install on a poster) is no stop of its own: every row
+ *                             of a wall would take two steps. It is marked [data-pad-skip], and X presses it (cardAction)
  */
 import { Nav, type Dir } from "./nav";
 import { hoverOn, twinHoverRules } from "./hover";
@@ -24,6 +28,27 @@ const VIRTUAL = "[data-pad-virtual]";
 const LAYERS = ".bs-layer, .viewer, .overlay .modal, .tb-panel";
 const TEXT_TYPES = new Set(["text", "search", "password", "email", "url", "tel", "number", ""]);
 const ARROW: Record<Dir, string> = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" };
+const OPPOSITE: Record<Dir, Dir> = { up: "down", down: "up", left: "right", right: "left" };
+/** what stays put in the window while the page scrolls under it */
+const FIXED = ".tb";
+/** a form (Settings: lines of a name, a field or a switch, buttons at the far end): Up and Down go line by line in it (PadNav.formStep) */
+const FORM = ".st-main, [data-pad-form]";
+/** a group that walks its own members with the arrows (the Home's fan, a choice of one among a few): its members stand for one another */
+const OWN_GROUP = '[role="group"], [role="radiogroup"], [role="listbox"], [role="tablist"]';
+
+/** where the page begins in the window: under the top bar */
+const pageTop = () => document.querySelector(FIXED)?.getBoundingClientRect().bottom ?? 0;
+/** nothing of it is on screen (the page was scrolled away from it by the stick, the wheel or a finger) */
+export function outOfSight(el: HTMLElement): boolean {
+  if (el.closest(FIXED + ", .bs-layer")) return false;
+  const r = el.getBoundingClientRect();
+  return r.bottom <= pageTop() + 4 || r.top >= innerHeight - 4 || r.right <= 4 || r.left >= innerWidth - 4;
+}
+/** the pill a card shows on hover for its one action (ui/poster.tsx): what X presses while the card has the focus */
+export function cardAction(el: HTMLElement | null): HTMLElement | null {
+  const act = el?.closest(".pc")?.querySelector<HTMLElement>(".pc-act button, .pc-act a") ?? null;
+  return act && !act.matches('[disabled], [aria-disabled="true"]') ? act : null;
+}
 
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -36,8 +61,9 @@ export function usable(el: HTMLElement, tabStops = true): boolean {
   if (r.width < 2 || r.height < 2) return false;
   const cs = getComputedStyle(el);
   if (cs.visibility === "hidden" || cs.pointerEvents === "none") return false;
-  // see-through means hidden, unless it is only arriving (a sheet or a dialog fades in from nothing)
-  for (let p: HTMLElement | null = el; p && p !== document.body; p = p.parentElement) if (seeThrough(p)) return false;
+  // see-through means hidden, unless it is only arriving (a sheet or a dialog fades in from nothing). [data-pad-solid]: drawn
+  // see-through on purpose, with something else showing in its place (the search folded to its icon in a narrow window)
+  for (let p: HTMLElement | null = el.hasAttribute("data-pad-solid") ? el.parentElement : el; p && p !== document.body; p = p.parentElement) if (seeThrough(p)) return false;
   return true;
 }
 
@@ -98,6 +124,10 @@ export function reveal(el: HTMLElement, how: boolean | "x" | "y" = true) {
 export class PadNav extends Nav {
   /** true while this engine itself moves the page's focus (the page's focus events are then its own echo) */
   moving = false;
+  /** what a step may land on, while one is being taken (move) */
+  private only: ((e: HTMLElement) => boolean) | null = null;
+  /** the last step taken: one straight back returns to where it started (Down from Play to the fan, Up again: Play) */
+  private trail: { from: HTMLElement; to: HTMLElement; dir: Dir } | null = null;
 
   layer(): HTMLElement | Document {
     const open = [...document.querySelectorAll<HTMLElement>(LAYERS)].filter(e => !e.closest("[data-leaving]") && e.getBoundingClientRect().height > 0);
@@ -105,12 +135,142 @@ export class PadNav extends Nav {
   }
   candidates(): HTMLElement[] {
     looking = new Map();
-    try { return [...this.layer().querySelectorAll<HTMLElement>(FOCUSABLE)].filter(e => usable(e)); }
-    finally { looking = null; }
+    try {
+      const all = [...this.layer().querySelectorAll<HTMLElement>(FOCUSABLE)].filter(e => usable(e));
+      return this.only ? all.filter(this.only) : all;
+    } finally { looking = null; }
+  }
+
+  /**
+   * One step. The engine (nav.ts) picks the nearest thing in the direction pressed, by where things are in the window. On a
+   * page that is not enough: the top bar stays in the window while the page scrolls under it, so it is always the nearest
+   * thing "above" what is in view. A step up from deep in a page went into the bar instead of to the row above, and the next
+   * one from the bar to a row scrolled out of sight. So, while no dialog or panel is open:
+   *   in the page   a step stays in the page; only where the page has nothing further up does Up reach the bar
+   *   in the bar    Left and Right walk the bar; Down goes to what is on screen under it; Up is its edge
+   * A step straight back the way the last one came returns to where that one started. And when what has the focus is out of
+   * sight (the page was scrolled by the stick, the wheel or a finger), the step lands on what is in view instead of
+   * dragging the page back.
+   */
+  move(dir: Dir) {
+    const cur = this.current, layer = this.layer();
+    if (!cur || !cur.isConnected || !layer.contains(cur) || !usable(cur, false)) { this.heal(); return; }
+    const t = this.trail;
+    if (t && t.to === cur && OPPOSITE[t.dir] === dir && t.from.isConnected && layer.contains(t.from) && usable(t.from, false)) { this.step(t.from, dir); return; }
+    if (layer !== document) { this.take(dir, null); return; }
+    const inBar = !!cur.closest(FIXED);
+    if (!inBar && outOfSight(cur)) { const seen = this.inSight(); if (seen) { this.step(seen, dir); return; } }
+    if (inBar && dir === "up") return;
+    const line = !inBar && (dir === "up" || dir === "down") ? this.formStep(cur, dir) : null;
+    if (line) { this.step(line, dir); return; }
+    if (this.take(dir, e => !!e.closest(FIXED) === inBar)) return;
+    if (!inBar && dir === "up") this.take(dir, e => !!e.closest(FIXED));
+    else if (inBar && dir === "down") { const top = pageTop(); this.take(dir, e => !e.closest(FIXED) && e.getBoundingClientRect().bottom > top + 8); }
+  }
+  /**
+   * A step up or down a form. Its lines hold things in different places (a field in the middle, a switch at its start, a
+   * button at the far end), and the engine prefers what lines up: from a button it went down the buttons and passed every
+   * switch on the way. In a form the step is to the next line that has anything, and on it to what is nearest sideways.
+   * Null where the next thing that way is no line of a form (the engine's own step then).
+   */
+  private formStep(cur: HTMLElement, dir: "up" | "down"): HTMLElement | null {
+    const form = cur.closest(FORM);
+    if (!form) return null;
+    const a = cur.getBoundingClientRect(), ax = a.left + a.width / 2;
+    const gap = (r: DOMRect) => (dir === "down" ? r.top - a.bottom : a.top - r.bottom);
+    // what lies that way in the form: past this line (its middle beyond this thing's edge)
+    const that = this.candidates().filter(e => e !== cur && form.contains(e)).map(e => [e, e.getBoundingClientRect()] as const)
+      .filter(([, r]) => (dir === "down" ? r.top + r.height / 2 > a.bottom - 2 : r.top + r.height / 2 < a.top + 2));
+    if (!that.length) return null;
+    // the next line: the nearest of them, and whatever stands beside it
+    const near = that.reduce((m, x) => (gap(x[1]) < gap(m[1]) ? x : m))[1];
+    let best: HTMLElement | null = null, bs = Infinity;
+    for (const [e, r] of that) {
+      if (!(r.top < near.bottom - 2 && r.bottom > near.top + 2)) continue;
+      const lined = r.left < a.right && r.right > a.left;
+      const s = Math.abs(r.left + r.width / 2 - ax) * (lined ? 0.3 : 1) + (lined ? 0 : 200);
+      if (s < bs) { bs = s; best = e; }
+    }
+    return best;
+  }
+  /** the engine's own step among the candidates `only` lets through; did the focus move? */
+  private take(dir: Dir, only: ((e: HTMLElement) => boolean) | null): boolean {
+    const from = this.current;
+    this.only = only;
+    try { super.move(dir); } finally { this.only = null; }
+    if (!from || !this.current || this.current === from) return false;
+    // nothing lines up with where the step started (the fan under a page's head, the Library's list under its view switch):
+    // it goes to the main thing that way, not to whichever happens to be nearest. A list to walk; else, of a line of
+    // actions, its main one
+    if (dir === "up" || dir === "down") {
+      const to = this.current, a = from.getBoundingClientRect(), b = to.getBoundingClientRect();
+      if (!(b.left < a.right && b.right > a.left)) {
+        const beyond = (e: HTMLElement) => { const r = e.getBoundingClientRect(); return dir === "down" ? r.top >= a.bottom - 4 : r.bottom <= a.top + 4; };
+        this.only = only;
+        const list = this.candidates().find(e => e.getAttribute("role") === "listbox" && beyond(e));
+        this.only = null;
+        // (a line's main action is its white button; where it has none, a download's Cancel, the one it starts with)
+        const line = to.matches(".btn") ? to.parentElement : null;
+        const main = list ?? line?.querySelector<HTMLElement>(":scope > .btn.primary") ?? line?.querySelector<HTMLElement>(":scope > .btn");
+        if (main && main !== to && usable(main)) this.focus(main, "y");
+      }
+    }
+    this.trail = { from, to: this.current, dir };
+    return true;
+  }
+  private step(to: HTMLElement, dir: Dir) {
+    const from = this.current;
+    this.focus(to, dir === "left" || dir === "right" ? "x" : "y");
+    this.trail = from ? { from, to, dir } : null;
+  }
+  /** the first thing of the page that is wholly on screen, as the page reads; else the first that shows at all */
+  inSight(): HTMLElement | null {
+    const top = pageTop();
+    const page = this.candidates().filter(e => !e.closest(FIXED)).map(e => [e, e.getBoundingClientRect()] as const).filter(([, r]) => r.bottom > top + 4 && r.top < innerHeight - 4);
+    const whole = page.filter(([, r]) => r.top >= top - 2 && r.bottom <= innerHeight + 2);
+    const read = (a: readonly [HTMLElement, DOMRect], b: readonly [HTMLElement, DOMRect]) => (Math.abs(a[1].top - b[1].top) > 12 ? a[1].top - b[1].top : a[1].left - b[1].left);
+    return ((whole.length ? whole : page).sort(read)[0]?.[0]) ?? null;
+  }
+  /** show where the focus is (the pad was picked up again): on what has it when that is on screen, else on what is */
+  show() {
+    const cur = this.current;
+    if (!cur || !cur.isConnected || !this.layer().contains(cur) || !usable(cur, false)) { this.land(); return; }
+    if (this.layer() === document && outOfSight(cur)) { const seen = this.inSight(); if (seen) { this.refocus(seen, false); return; } }
+    this.mark(cur);
+  }
+  /** what had the focus before what has it now (a panel that takes the focus as it opens is closed back onto this) */
+  before: HTMLElement | null = null;
+  /** where the focus last stood in its page (not in the window): a thing that goes away hands the focus to what is nearest there */
+  private stood: { x: number; y: number; fixed: boolean } | null = null;
+  private note(el: HTMLElement | null) {
+    if (!el) return;
+    const r = el.getBoundingClientRect(), fixed = !!el.closest(FIXED + ", .bs-layer, .overlay, .tb-panel");
+    this.stood = { x: r.left + r.width / 2 + (fixed ? 0 : scrollX), y: r.top + r.height / 2 + (fixed ? 0 : scrollY), fixed };
+  }
+  /** what had the focus is gone (Accept, once pressed; a row that left its list): the focus goes to what is nearest to where it
+   *  stood, so the next press starts from there and A is never pressed on nothing. True when it had to */
+  heal(): boolean {
+    const cur = this.current, layer = this.layer();
+    if (cur && cur.isConnected && layer.contains(cur) && usable(cur, false)) return false;
+    const c = this.candidates(), at = this.stood;
+    if (!c.length || !at) { this.land(); return true; }
+    let best: HTMLElement | null = null, bd = Infinity;
+    for (const e of c) {
+      const r = e.getBoundingClientRect(), fixed = !!e.closest(FIXED + ", .bs-layer, .overlay, .tb-panel");
+      const d = Math.hypot(r.left + r.width / 2 + (fixed ? 0 : scrollX) - at.x, r.top + r.height / 2 + (fixed ? 0 : scrollY) - at.y) + (fixed === at.fixed ? 0 : 2000);
+      if (d < bd) { bd = d; best = e; }
+    }
+    this.current?.classList.remove("f");
+    if (this.current) this.before = this.current;
+    this.current = null;
+    this.focus(best, true);
+    return true;
   }
   focus(el: HTMLElement | null, scroll: boolean | "x" | "y" = true) {
     if (this.current === el) return;
+    if (this.current) this.before = this.current;
     super.focus(el, false);                                  // the engine's own books: what is current, where it was
+    this.note(el);
     this.mark(el);
     if (el && document.activeElement !== el && !el.closest(VIRTUAL)) {
       this.moving = true;
@@ -131,7 +291,22 @@ export class PadNav extends Nav {
     const layer = this.layer();
     if (layer !== document && (layer as HTMLElement).matches(VIRTUAL)) return;      // a sheet of the mode is open: the field under it keeps the page's focus
     if (!layer.contains(target) || !target.matches(FOCUSABLE) || !usable(target, false)) return;
+    // the page put the focus on a heading (Settings, on the section just chosen: for whoever listens to the page): the pad
+    // goes on to the first thing under that heading it can press
+    if (/^H[1-6]$/.test(target.tagName)) {
+      const part = target.closest("section, [role='region']");
+      const first = part ? this.candidates().filter(e => part.contains(e)).map(e => [e, e.getBoundingClientRect()] as const)
+        .sort((a, b) => (Math.abs(a[1].top - b[1].top) > 12 ? a[1].top - b[1].top : a[1].left - b[1].left))[0]?.[0] : null;
+      if (first) { this.trail = null; this.refocus(first, true); }
+      return;
+    }
+    // a group that walks itself handed the focus to another of its members (the fan turned): the way back out of it stays
+    const t = this.trail, was = this.current;
+    const group = was?.closest(OWN_GROUP);
+    this.trail = t && was && t.to === was && group && group === target.closest(OWN_GROUP) ? { ...t, to: target } : null;
+    if (was) this.before = was;
     super.focus(target, false);
+    this.note(target);
     this.mark(target);
   }
   /** nothing is focused, or what was is gone: start on what asks for it, else the page's main action, else its first thing */
@@ -150,12 +325,14 @@ export class PadNav extends Nav {
       ?? (layer === document ? mine.find(e => e.matches(".btn.primary.s48, .btn.primary.s44") && at.get(e)!.top < innerHeight) : undefined)
       ?? mine[0] ?? c[0] ?? null;
     this.current?.classList.remove("f");
+    if (this.current) this.before = this.current;
     this.current = null;
     this.focus(first);
   }
   /** put the focus on `el` even when the engine thinks it is there already (a sheet closed over it) */
   refocus(el: HTMLElement | null, scroll: boolean | "x" | "y" = false) {
     this.current?.classList.remove("f");
+    if (this.current) this.before = this.current;
     this.current = null;
     this.focus(el, scroll);
   }

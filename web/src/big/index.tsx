@@ -6,10 +6,14 @@
  *   A / Enter         click what is focused; on a text field, the on-screen keyboard; on a choice list, its choices
  *   B / Esc           close what is open (the keyboard, a dialog, a panel of the bar), else go back a page
  *   LB RB / PgUp PgDn the tab before or after (Home, Discover, Library, Friends)
- *   Y or "/"          search          X   downloads          View   friends          Menu   your account's menu
+ *   Y or "/"          search          View   friends          Menu   your account's menu (Leave big screen is in it)
+ *   X                 the focused card's own action (Install, Play, Request: the pill a mouse sees on hover); else downloads
  *   right stick       scrolls the page
  *   F11               leave (and enter, from anywhere)
  *
+ * The focus shows from the start (a handheld has no mouse to say where the person is); moving the pointer hides it, and the
+ * next press of the pad only brings it back, on something that is on screen. It is the sign-in page's too (BigHost sits
+ * outside the session's gate): a handheld signs in with its pad.
  * With the keyboard, typing goes to the field that has the focus as always; the arrows leave a field only up and down.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
@@ -19,7 +23,7 @@ import { launcher } from "../launcher";
 import { Icon, type IconName } from "../ui/icons";
 import { bigMode } from "./mode";
 import { listenInput, type Cmd, type Dir } from "./nav";
-import { PadNav, arrowKey, describe, findAgain, isTextField, ownsArrow, sendKey, setValue, stepRange, whereIn } from "./pad";
+import { PadNav, arrowKey, cardAction, describe, findAgain, isTextField, ownsArrow, sendKey, setValue, stepRange, whereIn } from "./pad";
 import "./big.css";
 
 export const useBig = () => useSyncExternalStore(bigMode.subscribe, () => bigMode.on, () => false);
@@ -64,15 +68,25 @@ export function typeKey(text: string, key: string): string {
   return text + key;
 }
 
+/** the field a form wants filled in after this one: its next text field that is still empty (a sign-in's password after its
+ *  name). Done on the keyboard goes there instead of sending the form half filled in */
+export function nextEmptyField(field: HTMLInputElement | HTMLTextAreaElement): HTMLInputElement | HTMLTextAreaElement | null {
+  if (!field.form) return null;
+  const fields = [...field.form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea")].filter(e => isTextField(e) && e.getClientRects().length > 0);
+  const at = fields.indexOf(field);
+  return at < 0 ? null : fields.slice(at + 1).find(e => !e.value) ?? null;
+}
+
 function Keyboard({ field, onDone }: { field: HTMLInputElement | HTMLTextAreaElement; onDone: (submit: boolean) => void }) {
   const [shift, setShift] = useState(false), [symbols, setSymbols] = useState(false);
   const [text, setText] = useState(field.value);
   const put = (key: string) => { const next = typeKey(field.value, shift && key.length === 1 ? key.toUpperCase() : key); setValue(field, next); setText(next); if (shift) setShift(false); };
   // typing on a real keyboard goes to the field itself: what it holds is shown here too
-  useEffect(() => { const on = () => setText(field.value); field.addEventListener("input", on); return () => field.removeEventListener("input", on); }, [field]);
+  // (and another field's, when Next hands the sheet on to it)
+  useEffect(() => { const on = () => setText(field.value); on(); field.addEventListener("input", on); return () => field.removeEventListener("input", on); }, [field]);
   const rows = symbols ? SYMBOLS : LETTERS;
   const secret = field instanceof HTMLInputElement && field.type === "password";
-  const name = field.getAttribute("aria-label") || field.getAttribute("placeholder") || "Type";
+  const name = field.getAttribute("aria-label") || field.labels?.[0]?.textContent?.trim() || field.getAttribute("placeholder") || "Type";
   // a key takes no focus from the field (the field keeps typing with a real keyboard, and does not think it was left)
   const key = (k: string, label: ReactNode = k, cls = "") => (
     <button key={k} type="button" tabIndex={-1} data-pad-key={k} data-autofocus={k === START_KEY ? "" : undefined} className={`bs-key ${cls}`} onMouseDown={e => e.preventDefault()}
@@ -88,7 +102,7 @@ function Keyboard({ field, onDone }: { field: HTMLInputElement | HTMLTextAreaEle
           {key("symbols", symbols ? "abc" : "!#1", "wide")}
           {key("space", "space", "space")}
           {key("back", <Icon name="chevronLeft" size={18} />, "wide")}
-          {key("done", "Done", "wide done")}
+          {key("done", nextEmptyField(field) ? "Next" : "Done", "wide done")}
         </div>
       </div>
     </div>,
@@ -129,6 +143,11 @@ function Hints({ pad, hints }: { pad: boolean; hints: Hint[] }) {
 /* ─────────── the couch ─────────── */
 
 const nav = new PadNav();
+/** what X would do on the focused thing, in the action's own word ("Install"): a card's pill; null where there is none */
+const quickOf = (el: HTMLElement | null): string | null => {
+  const act = el?.matches(".pc-link") ? cardAction(el) : null;
+  return act ? (act.textContent ?? "").trim().slice(0, 24) || null : null;
+};
 /** right stick: how far a full tilt scrolls each frame, in the page's pixels */
 const STICK_SPEED = 26;
 
@@ -139,6 +158,10 @@ function Couch() {
   const [typing, setTyping] = useState<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const [choosing, setChoosing] = useState<HTMLSelectElement | null>(null);
   const [pad, setPad] = useState(false);
+  /** what X does where the focus is: the card's own action, by its name (null: downloads) */
+  const [quick, setQuick] = useState<string | null>(null);
+  /** is the app itself up (its top bar), or the sign-in page? */
+  const [inApp, setInApp] = useState(() => !!document.querySelector(".tb"));
   /** how the person is driving right now: "pad" shows the focus, "mouse" hides it (the pointer says where they are) */
   const drive = useCallback((by: "pad" | "mouse") => {
     const html = document.documentElement;
@@ -162,6 +185,9 @@ function Couch() {
     setTyping(null);
     if (!field) return;
     if (submit) {
+      // a form with more to fill in (a sign-in's password): on to that field, its keyboard up
+      const next = nextEmptyField(field);
+      if (next) { queueMicrotask(() => { nav.refocus(next, true); setTyping(next); }); return; }
       sending.current = true;
       try { sendKey(field, "Enter"); } finally { sending.current = false; }
       field.form?.requestSubmit?.();
@@ -200,7 +226,7 @@ function Couch() {
 
   const ok = () => {
     const el = nav.current;
-    if (!el || !el.isConnected) { nav.land(); return; }
+    if (!el || !el.isConnected) { nav.heal(); return; }
     if (typing || choosing) { el.click(); return; }
     if (isTextField(el)) { setTyping(el); return; }
     if (el instanceof HTMLSelectElement) { setChoosing(el); return; }
@@ -219,7 +245,7 @@ function Couch() {
       window.setTimeout(() => { if (nav.current === el && el.isConnected && whereIn(el) === was) nav.move(dir); }, 90);
       return;
     }
-    if (!el || !el.isConnected) { nav.land(); return; }
+    if (!el || !el.isConnected) { nav.heal(); return; }
     // a trailer or a screenshot fills the screen: Left and Right are the one before and the one after
     const layer = nav.layer();
     if (layer !== document && (layer as HTMLElement).matches(".viewer") && (dir === "left" || dir === "right")) {
@@ -231,8 +257,12 @@ function Couch() {
 
   const onCmd = (c: Cmd) => {
     if (sending.current) return;                             // a key this code sent to a control, heard again on its way up
+    // the pad picked up again after the pointer: the first press only shows where the focus is (on something in view); a step
+    // or a click on a focus nobody saw would go anywhere (A on an Uninstall three screens up)
+    const asleep = document.documentElement.dataset.drive === "mouse";
     drive("pad");
     touched.current = true;
+    if (asleep && !typing && !choosing && (c === "ok" || c === "up" || c === "down" || c === "left" || c === "right")) { nav.show(); return; }
     switch (c) {
       case "up": case "down": case "left": case "right": return move(c);
       case "ok": return ok();
@@ -247,10 +277,18 @@ function Couch() {
       return;
     }
     if (choosing) return;
+    if (!document.querySelector(".tb")) return;             // outside the app (the sign-in page): no tabs, no search, no menu
     switch (c) {
       case "prevTab": return router(tabStep(loc.pathname, -1));
       case "nextTab": return router(tabStep(loc.pathname, 1));
-      case "downloads": return router("/downloads");
+      case "downloads": {
+        // X on a card: its own action, the pill a mouse sees on hover (Install, Play, Request)
+        const act = nav.layer() === document ? cardAction(nav.current) : null;
+        if (!act) return router("/downloads");
+        act.click();
+        window.setTimeout(() => setQuick(quickOf(nav.current)), 400);   // the action changes with what it did (Install → Cancel)
+        return;
+      }
       case "friends": return router("/people");
       case "search": {
         // Y on the pad: the search with the keyboard sheet. "/" on a real keyboard: the search itself, as in the window (the bar's own key)
@@ -315,6 +353,7 @@ function Couch() {
     let x = -1, y = -1;
     const mouse = (e: MouseEvent) => { if (x >= 0 && Math.hypot(e.clientX - x, e.clientY - y) > 6) drive("mouse"); x = e.clientX; y = e.clientY; };
     const focus = (e: FocusEvent) => nav.adopt(e.target);
+    drive("pad");                                            // the focus shows from the start: nothing else says where the person is
     addEventListener("mousemove", mouse); document.addEventListener("focusin", focus);
     return () => { removeEventListener("mousemove", mouse); document.removeEventListener("focusin", focus); delete document.documentElement.dataset.drive; nav.mark(null); nav.current = null; };
   }, [drive]);
@@ -345,7 +384,7 @@ function Couch() {
   useLayoutEffect(() => { key.current = loc.key; }, [loc.key]);
   // what is focused is written down under its page as it changes (when the page goes, its elements are gone already)
   useEffect(() => {
-    nav.onFocus = el => { if (el && !el.closest(".bs-layer, .tb")) left.current.set(key.current, describe(el)); };
+    nav.onFocus = el => { if (el && !el.closest(".bs-layer, .tb")) left.current.set(key.current, describe(el)); setQuick(quickOf(el)); };
     return () => { nav.onFocus = () => {}; };
   }, []);
   useEffect(() => {
@@ -373,15 +412,20 @@ function Couch() {
   // something of the app's opened over the page (a dialog, a viewer, a panel of the bar): the focus goes into it, and comes
   // back to what had it when it closes (a panel does not move the focus by itself; a dialog does, and that is followed)
   useEffect(() => {
-    let layer: HTMLElement | Document = nav.layer(), raf = 0;
+    let layer: HTMLElement | Document = nav.layer(), raf = 0, app = !!document.querySelector(".tb");
     const under: { layer: HTMLElement | Document; had: HTMLElement | null }[] = [];
     const check = () => {
       raf = 0;
+      // the app arrived where the sign-in page stood (or the other way): the focus lands on what is there now
+      const inside = !!document.querySelector(".tb");
+      if (inside !== app) { app = inside; setInApp(inside); touched.current = false; window.setTimeout(() => { if (!touched.current) nav.land(); }, 150); }
       const now = nav.layer();
-      if (now === layer) return;
+      // what had the focus went away under it (a button that did its work, a row that left): the focus stays near where it was
+      if (now === layer) { if (nav.current && touched.current) nav.heal(); return; }
       const opened = now !== document && !under.some(u => u.layer === now);
       if (opened) {
-        under.push({ layer: now, had: nav.current });
+        // (a panel that takes the page's focus as it opens has it already: what it opened over is what had it before)
+        under.push({ layer: now, had: (now as HTMLElement).contains(nav.current) ? nav.before : nav.current });
         if (!(now as HTMLElement).contains(nav.current)) nav.land();
       } else {
         // closed: back to what was focused under it (the newest of the layers that are gone)
@@ -397,9 +441,12 @@ function Couch() {
     return () => { mo.disconnect(); cancelAnimationFrame(raf); };
   }, []);
 
+  // with a pad the way out is in the menu (☰): a handheld has no F11
   const hints: Hint[] = typing
-    ? [[pad ? "A" : "Enter", "Type"], [pad ? "X" : "⌫", "Delete"], [pad ? "Y" : "Space", "Space"], [pad ? "☰" : "Enter", "Done"], [pad ? "B" : "Esc", "Close"]]
-    : [[pad ? "A" : "Enter", "Select"], [pad ? "B" : "Esc", "Back"], [pad ? "Y" : "/", "Search"], [pad ? "LB RB" : "PgUp PgDn", "Tabs"], ...(pad ? [["☰", "Menu"] as Hint] : []), ["F11", "Leave"]];
+    ? [[pad ? "A" : "Enter", "Type"], [pad ? "X" : "⌫", "Delete"], [pad ? "Y" : "Space", "Space"], [pad ? "☰" : "Enter", nextEmptyField(typing) ? "Next" : "Done"], [pad ? "B" : "Esc", "Close"]]
+    : !inApp ? [[pad ? "A" : "Enter", "Select"], [pad ? "B" : "Esc", "Back"]]
+    : pad ? [["A", "Select"], ["B", "Back"], ...(quick ? [["X", quick] as Hint] : []), ["Y", "Search"], ["LB RB", "Tabs"], ["☰", "Menu"]]
+    : [["Enter", "Select"], ["Esc", "Back"], ["/", "Search"], ["PgUp PgDn", "Tabs"], ["F11", "Leave"]];
   return <>
     {typing && <Keyboard field={typing} onDone={doneTyping} />}
     {choosing && <Chooser field={choosing} onDone={() => { const f = choosing; setChoosing(null); queueMicrotask(() => nav.refocus(f)); }} />}

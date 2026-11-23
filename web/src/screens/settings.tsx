@@ -33,14 +33,16 @@ export function Settings() {
   useLitChipInView(nav, cur);
   const entry = (e: Entry) => (
     <li key={e.id}>
-      <a href={`#${e.id}`} aria-current={cur === e.id ? "true" : undefined} onClick={ev => { if (plainClick(ev)) { ev.preventDefault(); go(e.id); } }}>{e.label}</a>
+      {/* a pad starts on the section that is lit (big/pad.ts land) */}
+      <a href={`#${e.id}`} aria-current={cur === e.id ? "true" : undefined} data-autofocus={cur === e.id ? "" : undefined} onClick={ev => { if (plainClick(ev)) { ev.preventDefault(); go(e.id); } }}>{e.label}</a>
     </li>
   );
   return (
     <div className="st">
       <div className="st-side">
         <h1 className="st-title">Settings</h1>
-        <nav className="st-index" aria-label="Settings" ref={nav}>
+        {/* data-nav-free: with a pad, Right leaves the index for the section beside it though nothing there is on its line (big/nav.ts) */}
+        <nav className="st-index" aria-label="Settings" ref={nav} data-nav-free="">
           <ul>
             {mine.map(entry)}
             {admin.length > 0 && <li className="st-index-rule" role="separator" />}

@@ -4,8 +4,9 @@
  * In a plain browser there is no PC to set: This PC is the launcher's download, and On this PC is not there.
  * Board: M/lfs/settings, the This PC and On this PC panels.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
+import { bigMode, type BigSize } from "../big/mode";
 import { fmtSize, urlBase } from "../api";
 import { launcher, updateCheckable, updateLine, type InstalledGame, type LauncherConfig, type PadButton } from "../launcher";
 import { useLauncher } from "../launcher-state";
@@ -40,6 +41,9 @@ function LauncherPc() {
   const [cfg, setCfg] = useState<LauncherConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
+  // the big screen's two choices for this device, as they stand now
+  const bigNow = useSyncExternalStore(bigMode.subscribe, () => `${bigMode.size}|${bigMode.startsBig ? 1 : 0}`);
+  const big = { size: bigNow.split("|")[0] as BigSize, starts: bigNow.endsWith("|1") };
   const load = useCallback(() => launcher!.config().then(c => { setCfg(c); setError(null); }).catch(() => setError("The launcher did not answer")), []);
   useEffect(() => { void load(); }, [load]);
 
@@ -78,6 +82,15 @@ function LauncherPc() {
         {PAD_BUTTON && <Row label="Controller's home button" labelId="pc-pad">
           <Radios<PadButton> value={cfg.padButton ?? "off"} labelledBy="pc-pad" onChange={v => void save({ padButton: v })}
             options={[{ value: "off", label: "Does nothing" }, { value: "show", label: "Shows Ahoy" }, { value: "big", label: "Opens Big screen" }]} />
+        </Row>}
+        {/* the big screen on this device (big/mode.ts keeps both for it): whether Ahoy opens in it (by itself on a handheld),
+            and how large it is (by the display; Large is what a screen held in the hands gets) */}
+        {bigMode.startable && <Row label="Open in Big screen" labelId="pc-big-start">
+          <Toggle on={big.starts} labelledBy="pc-big-start" onChange={v => bigMode.setStartsBig(v)} />
+        </Row>}
+        {bigMode.sizable && <Row label="Big screen size" labelId="pc-big-size">
+          <Radios<BigSize> value={big.size} labelledBy="pc-big-size" onChange={v => bigMode.setSize(v)}
+            options={[{ value: "auto", label: "Automatic" }, { value: "standard", label: "Standard" }, { value: "large", label: "Large" }]} />
         </Row>}
         {/* launchers from 0.13: this PC's saves go to the server after playing and come from it before */}
         {V.can && <Row label="Keep saves in step" labelId="pc-saves">

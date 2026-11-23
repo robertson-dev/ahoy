@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import "./harness";
-import { ZOOM_LINES, Zoomer, zoomFor } from "../src/big/mode";
+import { HAND_LINES, ZOOM_LINES, Zoomer, inHands, linesFor, startsBig, zoomFor, type Display } from "../src/big/mode";
 import { BIG_TABS, tabOf, tabStep, typeKey } from "../src/big/index";
 import { hoverTwin, withoutHoverQuery } from "../src/big/hover";
 
@@ -23,6 +23,45 @@ describe("how far the page is zoomed", () => {
     expect(zoomFor(600)).toBe(1);
     expect(zoomFor(4320)).toBe(4);
     for (const odd of [0, -5, NaN, Infinity]) expect(zoomFor(odd)).toBe(1);
+  });
+});
+
+describe("a screen held in the hands", () => {
+  /** a display as the page sees it: its height in Windows' scaled points, a touch screen or not, built in or not (null: cannot tell) */
+  const d = (lines: number, touch: boolean, internal: boolean | null = null): Display => ({ lines, touch, internal });
+  test("is a touch screen at most 800 of Windows' points tall: the handhelds at the scale they ship with", () => {
+    expect(inHands(d(720, true))).toBe(true);                // 7 inches, 1920 x 1080 at 150%
+    expect(inHands(d(800, true))).toBe(true);                // 1920 x 1200 at 150%, 2560 x 1600 at 200%, 1280 x 800 at 100%
+    expect(inHands(d(720, true, true))).toBe(true);          // and the browser says it is the PC's own display
+  });
+  test("not a television or a monitor, whatever the PC: no touch screen, a taller display, or one known to be plugged in", () => {
+    expect(inHands(d(720, false))).toBe(false);              // a 1080p television at 150%
+    expect(inHands(d(1080, true))).toBe(false);              // a touch laptop or monitor; the handheld at 100% too (Settings has the size)
+    expect(inHands(d(864, true))).toBe(false);               // 1080 lines at 125%: an ordinary laptop's scale
+    expect(inHands(d(720, true, false))).toBe(false);        // the handheld in its dock: this display is the television
+    expect(inHands(d(0, true))).toBe(false);
+  });
+  test("shows 600 of the page's lines instead of 720: the same app, a fifth larger again", () => {
+    expect(HAND_LINES).toBe(600);
+    expect(linesFor("auto", d(720, true))).toBe(600);
+    expect(linesFor("auto", d(720, false))).toBe(720);
+    expect(zoomFor(720, linesFor("auto", d(720, true)))).toBe(1.2);    // 1920 x 1080 at 150%: the page lays out 1067 x 600
+    expect(zoomFor(800, HAND_LINES)).toBe(1.33);
+    expect(zoomFor(1080, HAND_LINES)).toBe(1.8);
+    expect(zoomFor(540, HAND_LINES)).toBe(1);                // never smaller than the page is (200% on 1080 lines)
+  });
+  test("the person's own pick of a size wins over the display, either way", () => {
+    expect(linesFor("large", d(1080, false))).toBe(600);     // a television, wanted larger
+    expect(linesFor("standard", d(720, true))).toBe(720);    // a handheld, wanted as a television has it
+    expect(linesFor("large", d(1080, true))).toBe(600);      // the handheld at 100%, which the display alone does not give away
+  });
+  test("opens in the big screen by itself, docked or not; the person's own choice wins", () => {
+    expect(startsBig(null, d(720, true))).toBe(true);
+    expect(startsBig(null, d(720, true, false))).toBe(true); // in its dock it is still driven by its pad
+    expect(startsBig(null, d(720, false))).toBe(false);
+    expect(startsBig(null, d(1080, true))).toBe(false);
+    expect(startsBig(false, d(720, true))).toBe(false);
+    expect(startsBig(true, d(1440, false))).toBe(true);
   });
 });
 
@@ -64,6 +103,21 @@ describe("the page's zoom follows the mode", () => {
     const page = z();
     page.fit(false);
     w.zoom = 1.5;                                    // changed behind the page's back
+    page.fit(false);
+    expect(w.zoom).toBe(1);
+  });
+  test("the lines it shows are asked each time: a size picked while big takes effect at the next fit, and leaving is still 1", () => {
+    const w = { zoom: 1, lines: 720 };                       // a handheld: 1080 lines at 150%
+    let want = 720;
+    const page = new Zoomer(f => { w.zoom = f; }, () => Math.round(w.lines / w.zoom), () => want);
+    page.fit(true); page.fit(true);
+    expect(w.zoom).toBe(1);                                  // 720 lines of a display 720 points tall
+    want = 600; page.fit(true);
+    expect(w.zoom).toBe(1.2);                                // the page now lays out 600 lines
+    page.fit(true);
+    expect(w.zoom).toBe(1.2);                                // and stays (600 x 1.2 is the same 720 points)
+    want = 720; page.fit(true);
+    expect(w.zoom).toBe(1);
     page.fit(false);
     expect(w.zoom).toBe(1);
   });

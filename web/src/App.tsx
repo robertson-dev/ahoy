@@ -75,8 +75,6 @@ function Shell() {
   return (
     <>
       <TopBar over={over} />
-      {/* Big screen is this same app on the whole display, driven by a pad (big/): it mounts beside the pages, not instead of them */}
-      <BigHost />
       <main ref={main} className={`page${over ? " under" : ""}`}>
         {/* a page that throws shows a quiet stop instead of blanking the window; another page clears it */}
         <Boundary resetKey={loc.key} fallback={retry => <PageFailed retry={retry} />}>
@@ -105,7 +103,9 @@ function Shell() {
 
 export function App() {
   return (
-    <UiProvider><SessionProvider><NewsProvider><LauncherProvider><LibProvider><PcsProvider><SavesProvider><UnderBarProvider>
+    // Big screen is this same app on the whole display, driven by a pad (big/): it mounts beside the pages, not instead of
+    // them, and outside the session's gate, so the sign-in page is the pad's too
+    <UiProvider><BigHost /><SessionProvider><NewsProvider><LauncherProvider><LibProvider><PcsProvider><SavesProvider><UnderBarProvider>
       <Shell />
     </UnderBarProvider></SavesProvider></PcsProvider></LibProvider></LauncherProvider></NewsProvider></SessionProvider></UiProvider>
   );

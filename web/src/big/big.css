@@ -11,14 +11,27 @@
 
 html[data-big][data-still], html[data-big][data-still] * { cursor: none !important; }
 html[data-big] .page { padding-bottom: 72px; }                         /* the hint line never sits on a page's last row */
+/* the Home is one screen, its fan cut by the window's bottom edge: with room under it the page scrolled when the fan took the
+   focus, to a bare strip under the cut cards */
+html[data-big] .page:has(> .home), html[data-big] .page:has(.ll) { padding-bottom: 0; }
+/* the Library's list runs to the window's bottom edge: while the hint line shows, its pane ends above it */
+html[data-drive="pad"] .ll { padding-bottom: 64px; }
 html[data-big] :is(a, button, input, select, textarea, [tabindex]) { scroll-margin: 112px 24px 96px; }
 /* the app's amber focus ring gives way to the couch's focus */
 html[data-big] :focus-visible, html[data-big] .tf:has(input:focus-visible), html[data-big] .tb-search:has(input:focus-visible), html[data-big] .sel select:focus-visible { outline: none; }
+
+/* (the pages' own amber marks too: the search page's field, a profile's game, the colour slider's knob, the row the keys
+   walk in the Library's list) */
+html[data-big] :is(.sx-field:has(input:focus-visible), .pf-now:has(> a.pf-now-link:focus-visible), .st-hue input:focus-visible ~ .st-hue-thumb, .ll-clear:focus-visible) { outline: none; }
+html[data-big] .ll-list:focus-visible .ll-row.on, html[data-big] .ll-list.keys .ll-row.on,
+html[data-big] .ll-list:focus-visible > :is(.ll-quiet, .ll-empty) { box-shadow: none; }
 
 /* ── the focus ── */
 /* anything else (a row of a list or a panel, a card, a link in a line): a thin white edge around it, like a poster's */
 html[data-drive="pad"] [data-pf] { outline: 2px solid #fff; outline-offset: 3px; }
 html[data-drive="pad"] :is(.sp-row, .sp-who, .rq-hit, .rq-row, .feed-line, .ll-row, [role="option"])[data-pf] { background-color: rgba(255,255,255,.07); }
+/* a line of what happened: the focus stands on the face or the game in it, and the whole line lights */
+html[data-drive="pad"] :is(.feed-line, .fr-feed-row):has([data-pf]) { background-color: rgba(255,255,255,.07); border-radius: 12px; box-shadow: 0 0 0 6px rgba(255,255,255,.07); }
 
 /* buttons, pills, chips, the bar's controls, a menu's lines: white, dark ink */
 html[data-drive="pad"] :is(.btn, .chip, .chips > button, .chips > a, .ap, a.fpill, button.fpill, .ibtn, .ib, .tb-bell, .sh-all, .mn a, .mn button, .sp-foot, .rq-all, .link)[data-pf] {
@@ -28,6 +41,8 @@ html[data-drive="pad"] :is(.btn, .chip, .chips > button, .chips > a, .ap, a.fpil
 }
 html[data-drive="pad"] :is(.chip, .chips > button, .chips > a, a.fpill, button.fpill, .mn a, .mn button, .sp-foot, .rq-all)[data-pf] :is(.ic, .fpill-ic, .tb-w, small, i, kbd) { color: rgba(16,16,16,.66); }
 html[data-drive="pad"] :is(.btn, .ap, .ibtn, .ib, .tb-bell, .sh-all)[data-pf] .ic { color: inherit; }
+/* a word that is a button (Versions beside a game's saves): a small pill around the word, where it stands */
+html[data-drive="pad"] .link[data-pf] { padding: 4px 10px; margin: -4px -10px; border-radius: 12px; transform: none; box-shadow: none; }
 html[data-drive="pad"] .tb-bell[data-pf] { width: 44px; margin: 0 -4px 0 -8px; }
 /* white already (the primary button, the chip that is on): it lifts and glows */
 html[data-drive="pad"] :is(.btn.primary, .chip.on, .chips > .on)[data-pf] { transform: scale(1.07); box-shadow: 0 0 0 5px rgba(255,255,255,.24), 0 14px 34px rgba(0,0,0,.5); }
@@ -47,8 +62,28 @@ html[data-drive="pad"] .pc:has([data-pf]) { z-index: 5; }
 /* fields and choice lists: a white edge, and a choice list turns white like a button */
 html[data-drive="pad"] :is(.tf, .tb-search) input[data-pf] { outline: none; }
 html[data-drive="pad"] :is(.tf, .tb-search):has(input[data-pf]) { box-shadow: inset 0 0 0 2px #fff; border-color: transparent; }
+/* a narrow window folds the search to its icon and opens it over the tabs while it has the focus (ahoy.css). The pad's focus
+   resting on it is not typing: it stays the icon, the tabs stay beside it, until there is text in it (the keyboard sheet
+   shows what is typed) */
+@media (max-width: 1080px) {
+  html[data-drive="pad"] .tb-left:has(.tb-search input:placeholder-shown:focus) .tb-nav { display: flex; }
+  html[data-drive="pad"] .tb-search:has(input:placeholder-shown):focus-within { width: 44px; padding: 0 0 0 12px; }
+  html[data-drive="pad"] .tb-search:has(input:placeholder-shown):focus-within input { opacity: 0; }
+  html[data-drive="pad"] .tb-search:has(input[data-pf]:placeholder-shown) { background: #fff; box-shadow: none; }
+  html[data-drive="pad"] .tb-search:has(input[data-pf]:placeholder-shown) .fpill-ic { color: #101010; }
+}
+/* the way out of the mode is this line of the menu itself: a pad has no F11 to be told of */
+html[data-drive="pad"] .mn kbd { display: none; }
 html[data-drive="pad"] .sel select[data-pf] { outline: none; background: #fff; border-color: #fff; color: #101010; }
 html[data-drive="pad"] .sel:has(select[data-pf]) { color: #101010; }
+html[data-drive="pad"] .sx-field:has(input[data-pf]) { box-shadow: inset 0 0 0 2px #fff; border-color: transparent; }
+html[data-drive="pad"] .sx-field input[data-pf], html[data-drive="pad"] .st-hue input[data-pf], html[data-drive="pad"] .pf-now > a.pf-now-link[data-pf] { outline: none; }
+html[data-drive="pad"] .pf-now:has(> a.pf-now-link[data-pf]) { outline: 2px solid #fff; outline-offset: 3px; }
+html[data-drive="pad"] .st-hue input[data-pf] ~ .st-hue-thumb { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px #fff; }
+/* a list that walks itself (the Library's): the focus is on the row it stands on, not around the list */
+html[data-drive="pad"] .ll-list[data-pf] { outline: none; }
+html[data-drive="pad"] .ll-list[data-pf] .ll-row.on { box-shadow: inset 0 0 0 2px #fff; }
+html[data-drive="pad"] .ll-list[data-pf] > :is(.ll-quiet, .ll-empty) { border-radius: 12px; box-shadow: inset 0 0 0 2px #fff; }
 html[data-drive="pad"] .toggle[data-pf] { outline: none; }
 html[data-drive="pad"] .toggle[data-pf]::before { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px #fff; }
 

@@ -11,6 +11,10 @@ export interface NewsItem { id: string; text: string; needs?: string }
 export interface News { id: string; date: string; items: NewsItem[] }
 
 export const NEWS: News[] = [
+  { id: "2026-11-23-handheld", date: "2026-11-23", items: [
+    { id: "handheld", needs: "0.12.0", text: "On a handheld PC, Ahoy opens in Big screen at a larger size, and its controller works from the sign-in page on. Settings, This PC has both." },
+    { id: "pad-moves", text: "In Big screen the controller shows where it is from the start and moves row by row. X does the highlighted game's own action." },
+  ] },
   { id: "2026-11-17-art", date: "2026-11-17", items: [
     { id: "stable-card-colours", text: "Game cards keep their artwork colours as you browse the carousel." },
     { id: "art-replacements", text: "Updated game artwork appears right away, including when it is replaced again." },

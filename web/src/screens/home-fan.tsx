@@ -94,7 +94,8 @@ export function CardRow({ L, pick, colour, children }: { L: Labels; pick: CardPi
 /** the action as the card's pill (the recipe's geometry: frosted .55 glass, a .22 hairline) */
 export function CardPill({ act, p, busy, label, onAct }: { act: Act; p: PillBox; busy: boolean; label: string; onAct: () => void }) {
   return (
-    <button type="button" className="hf-pill" aria-disabled={act.disabled || busy || undefined} aria-busy={busy || undefined} aria-pressed={act.pressed} title={act.title} aria-label={`${act.label} ${label}`}
+    // (with a pad the side cards' pills are no stops: Left and Right bring a card to the centre, where the spotlight's own button is its action)
+    <button type="button" className="hf-pill" data-pad-skip="" aria-disabled={act.disabled || busy || undefined} aria-busy={busy || undefined} aria-pressed={act.pressed} title={act.title} aria-label={`${act.label} ${label}`}
       style={{ height: p.h, padding: `0 ${p.padR}px 0 ${p.padL}px`, gap: p.gap, borderRadius: p.h / 2, fontSize: p.font }}
       onClick={e => { e.preventDefault(); e.stopPropagation(); if (!act.disabled && !busy) onAct(); }}>
       <Icon name={busy ? "spinner" : act.icon} size={p.icon} strokeWidth={act.icon === "cancel" || act.icon === "plus" || act.icon === "tick" ? 2.6 : act.icon === "track" ? 2.2 : 2.4} />

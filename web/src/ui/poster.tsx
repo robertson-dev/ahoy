@@ -108,7 +108,8 @@ export function PosterCard({ to, onOpen, art, wide, title, size = 204, line, act
     <div className={`pc${d.small ? " sm" : ""}${bare ? " bare" : ""}${className ? " " + className : ""}`} style={vars}>
       {to ? <Link to={to} className="pc-link" aria-label={label ?? (bare ? title : undefined)}>{inner}</Link>
         : <button type="button" className="pc-link" aria-label={label ?? (bare ? title : undefined)} onClick={onOpen}>{inner}</button>}
-      {action && <div className={`pc-act${actionShown ? " shown" : ""}`}>{action}</div>}
+      {/* with a pad the pill is no stop of its own (a wall would take two steps a row): it shows on the focused card, and X presses it (big/pad.ts) */}
+      {action && <div className={`pc-act${actionShown ? " shown" : ""}`} data-pad-skip="">{action}</div>}
     </div>
   );
 }
