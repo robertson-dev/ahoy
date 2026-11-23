@@ -54,6 +54,24 @@ export const linesFor = (size: BigSize, d: Display): number => (size === "large"
  *  a touch screen and a small display, whatever it is plugged into (the handheld in its dock is still driven by its pad) */
 export const startsBig = (choice: boolean | null, d: Display): boolean => choice ?? inHands({ ...d, internal: null });
 
+/**
+ * How far the window hangs over its display's right and bottom edges, in the page's own pixels. The launcher's window is
+ * never smaller than its own minimum (980 × 640 of Windows' points, up to launcher 0.13), not even when it takes the whole
+ * display: on a display smaller than that (1080 lines at Windows' 175% are 617 points, at 200% 540) the window stays 646
+ * tall, and what the page puts along its bottom edge is cut off by the screen's (the hint line, 2026-11-23, on the handheld
+ * the 600 lines were for). Nothing while the window is not on the whole display, or fits it.
+ *   outer    the window in Windows' points (a page's zoom does not change it; on the whole display it has no frame)
+ *   inner    the same window in the page's pixels
+ *   screen   its display in Windows' points
+ */
+export function overhang(w: { outer: readonly [number, number]; inner: readonly [number, number]; screen: readonly [number, number] }): { right: number; bottom: number } {
+  const [ow, oh] = w.outer, [iw, ih] = w.inner, [sw, sh] = w.screen;
+  if (!(ow > 0 && oh > 0 && iw > 0 && ih > 0 && sw > 0 && sh > 0) || ow < sw - 1 || oh < sh - 1) return { right: 0, bottom: 0 };
+  // (under two points is a rounding of the display's scale, not a window too large)
+  const px = (over: number, outer: number, inner: number) => (over >= 2 ? Math.ceil(over * inner / outer) : 0);
+  return { right: px(ow - sw, ow, iw), bottom: px(oh - sh, oh, ih) };
+}
+
 const nativeFull = !!launcher?.features?.includes("fullscreen");
 const nativeZoom = !!launcher?.features?.includes("zoom") && !!launcher?.zoom;
 
@@ -78,7 +96,9 @@ export class Zoomer {
     if (!on) { this.zoom = 1; this.set(1); return; }
     if (this.zoom == null) { this.zoom = 1; this.set(1); return; }
     const want = zoomFor(this.height() * this.zoom, this.lines());
-    if (want === this.zoom) return;
+    // (a hundredth is not worth another turn: the page's height is whole pixels, and two zooms a hundredth apart could
+    // hand it back and forth for ever)
+    if (Math.abs(want - this.zoom) < 0.015) return;
     this.zoom = want;
     this.set(want);
   }
@@ -94,9 +114,22 @@ let startChoice: boolean | null = kept(START_KEY) === "1" ? true : kept(START_KE
 let internal: boolean | null = null;
 /** the display the window is on (window.screen follows the window; its height is not changed by the page's zoom) */
 const display = (): Display => ({ lines: typeof screen === "undefined" ? 0 : screen.height, touch: typeof navigator !== "undefined" && navigator.maxTouchPoints > 0, internal });
-const zoomer = new Zoomer(f => { void launcher!.zoom!(f).catch(() => {}); }, () => innerHeight, () => linesFor(size, display()));
+/** how far the window hangs over its display (overhang), kept for the page's styles as --cut-r and --cut-b on <html> */
+let cut = { right: 0, bottom: 0 };
+// (the lines are counted in what the display shows of the window, not in what hangs over its edge)
+const zoomer = new Zoomer(f => { void launcher!.zoom!(f).catch(() => {}); }, () => innerHeight - cut.bottom, () => linesFor(size, display()));
 const subs = new Set<() => void>();
 const tell = () => { for (const f of subs) f(); };
+/** measure the overhang again (the window changed, or the mode did): only the big screen in the launcher has one to mind */
+function measure() {
+  const now = on && nativeFull && typeof screen !== "undefined"
+    ? overhang({ outer: [outerWidth, outerHeight], inner: [innerWidth, innerHeight], screen: [screen.width, screen.height] }) : { right: 0, bottom: 0 };
+  if (now.right === cut.right && now.bottom === cut.bottom) return;
+  cut = now;
+  const style = document.documentElement.style;
+  if (cut.right) style.setProperty("--cut-r", `${cut.right}px`); else style.removeProperty("--cut-r");
+  if (cut.bottom) style.setProperty("--cut-b", `${cut.bottom}px`); else style.removeProperty("--cut-b");
+}
 
 /** ask the browser which display the window is on, and again when the window moves to another. Only in the launcher (a
  *  browser would ask the person for a permission), and only where a page may ask (https, or the PC's own address) */
@@ -112,6 +145,7 @@ function learnDisplay() {
 
 /** the page zoomed so the window is ZOOM_LINES tall; again whenever the window's real size changes (another display) */
 function fit() {
+  measure();
   if (nativeZoom) zoomer.fit(on);
 }
 let fitTimer = 0;
@@ -135,6 +169,8 @@ export const bigMode = {
   get on() { return on; },
   /** the page's zoom in the launcher (1 elsewhere): what one of the display's pixels is in the page's */
   get zoom() { return nativeZoom ? zoomer.factor : 1; },
+  /** how much of the window's right and bottom the display does not show, in the page's pixels (overhang) */
+  get cut() { return cut; },
   /** can the size be chosen here (the launcher zooms the page), and can Ahoy open in the big screen by itself (the launcher
    *  takes the whole display without a gesture)? */
   get sizable() { return nativeZoom; },

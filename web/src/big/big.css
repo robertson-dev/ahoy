@@ -10,13 +10,32 @@
  */
 
 html[data-big][data-still], html[data-big][data-still] * { cursor: none !important; }
-html[data-big] .page { padding-bottom: 72px; }                         /* the hint line never sits on a page's last row */
+/*
+ * A display smaller than the launcher's smallest window (mode.ts overhang): the window hangs over the display's bottom and
+ * right edges by --cut-b and --cut-r (set on <html>, in the page's pixels; absent while it fits), and the screen cuts off
+ * what stands there. Whatever is fixed to those edges, or as tall as the window, keeps inside what shows.
+ */
+html[data-big] { --page-r: calc(max(0px, var(--page-x) - var(--sb)) + var(--cut-r, 0px)); }
+html[data-big] .tb { right: var(--cut-r, 0px); }
+html[data-big] :is(.overlay, .viewer, .bs-choose, .bs-osk) { right: var(--cut-r, 0px); bottom: var(--cut-b, 0px); }
+html[data-big] .toasts { right: calc(24px + var(--cut-r, 0px)); bottom: calc(24px + var(--cut-b, 0px)); }
+html[data-big] :is(.home, .home-empty, .ll) { height: calc(100vh - var(--cut-b, 0px)); }
+html[data-big] .ll.narrow { height: calc(100vh - var(--bar-h) - var(--cut-b, 0px)); }
+html[data-big] .modal { max-height: calc(100vh - 48px - var(--cut-b, 0px)); }
+/* (and a dialog stands above the hint line while that shows, not under its end) */
+html[data-drive="pad"] .overlay { padding-bottom: 64px; }
+html[data-drive="pad"] .modal { max-height: calc(100vh - 88px - var(--cut-b, 0px)); }
+html[data-big] .viewer .stage { width: min(1280px, calc(100vw - 160px - var(--cut-r, 0px))); max-height: calc(100vh - 120px - var(--cut-b, 0px)); }
+html[data-big] .tb-panel { max-height: calc(100vh - var(--bar-h) - 16px - var(--cut-b, 0px)); }
+html[data-big] .tb.solid .tb-panel { max-height: calc(100vh - 88px - var(--cut-b, 0px)); }
+
+html[data-big] .page { padding-bottom: calc(72px + var(--cut-b, 0px)); }   /* the hint line never sits on a page's last row */
 /* the Home is one screen, its fan cut by the window's bottom edge: with room under it the page scrolled when the fan took the
    focus, to a bare strip under the cut cards */
 html[data-big] .page:has(> .home), html[data-big] .page:has(.ll) { padding-bottom: 0; }
 /* the Library's list runs to the window's bottom edge: while the hint line shows, its pane ends above it */
 html[data-drive="pad"] .ll { padding-bottom: 64px; }
-html[data-big] :is(a, button, input, select, textarea, [tabindex]) { scroll-margin: 112px 24px 96px; }
+html[data-big] :is(a, button, input, select, textarea, [tabindex]) { scroll-margin: 112px calc(24px + var(--cut-r, 0px)) calc(96px + var(--cut-b, 0px)) 24px; }
 /* the app's amber focus ring gives way to the couch's focus */
 html[data-big] :focus-visible, html[data-big] .tf:has(input:focus-visible), html[data-big] .tb-search:has(input:focus-visible), html[data-big] .sel select:focus-visible { outline: none; }
 
@@ -107,7 +126,7 @@ html[data-drive="pad"] .toggle[data-pf]::before { box-shadow: 0 0 0 3px var(--bg
 html[data-drive="pad"] .bs-key[data-pf] { outline: none; background: #fff; border-color: transparent; color: #101010; transform: scale(1.1); box-shadow: 0 10px 26px rgba(0,0,0,.5); z-index: 1; }
 html[data-drive="pad"] .bs-key[data-pf] .ic { color: inherit; }
 .bs-choose { inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(8,8,8,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: veil-in .3s var(--ease) backwards; }
-.bs-choose-box { display: grid; gap: 4px; width: min(420px, 100%); max-height: calc(100vh - 96px); overflow: auto; padding: 12px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair-3), 0 24px 60px rgba(0,0,0,.6); animation: rise .22s var(--ease); }
+.bs-choose-box { display: grid; gap: 4px; width: min(420px, 100%); max-height: calc(100vh - 96px - var(--cut-b, 0px)); overflow: auto; padding: 12px; border-radius: 24px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair-3), 0 24px 60px rgba(0,0,0,.6); animation: rise .22s var(--ease); }
 .bs-choose-box h3 { padding: 8px 12px 10px; font: 800 20px/28px var(--display); letter-spacing: -.01em; }
 .bs-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; height: 48px; padding: 0 14px; border: 0; border-radius: 14px; background: none; color: var(--fg); font: 500 16px/1 var(--ui); text-align: left; }
 .bs-opt:hover { background: var(--fill-quiet); }
@@ -115,7 +134,7 @@ html[data-drive="pad"] .bs-key[data-pf] .ic { color: inherit; }
 html[data-drive="pad"] .bs-opt[data-pf] { outline: none; background: #fff; color: #101010; }
 
 /* ── what the buttons do: one quiet line, bottom left ── */
-.bs-hints { position: fixed; left: var(--page-x); bottom: 16px; z-index: 210; display: none; align-items: center; gap: 18px; height: 36px; padding: 0 16px 0 12px; border-radius: 18px; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-line); color: var(--fg-2); font: 500 13px/1 var(--ui); white-space: nowrap; pointer-events: none; }
+.bs-hints { position: fixed; left: var(--page-x); bottom: calc(16px + var(--cut-b, 0px)); z-index: 210; display: none; align-items: center; gap: 18px; height: 36px; padding: 0 16px 0 12px; border-radius: 18px; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-line); color: var(--fg-2); font: 500 13px/1 var(--ui); white-space: nowrap; pointer-events: none; }
 html[data-drive="pad"] .bs-hints { display: inline-flex; }
 body:has(.viewer) .bs-hints { display: none; }                         /* a trailer has the whole screen, its own controls at the bottom */
 .bs-hints span { display: inline-flex; align-items: center; gap: 7px; }

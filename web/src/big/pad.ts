@@ -18,6 +18,7 @@
  */
 import { Nav, type Dir } from "./nav";
 import { hoverOn, twinHoverRules } from "./hover";
+import { bigMode } from "./mode";
 
 // (a listbox's options are not here: the listbox takes the focus and walks them with its own Up and Down)
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, [role="button"], [role="menuitem"], [role="tab"], [role="listbox"], [tabindex]';
@@ -36,13 +37,16 @@ const FORM = ".st-main, [data-pad-form]";
 /** a group that walks its own members with the arrows (the Home's fan, a choice of one among a few): its members stand for one another */
 const OWN_GROUP = '[role="group"], [role="radiogroup"], [role="listbox"], [role="tablist"]';
 
+/** where the window ends on the screen: its own edge, less what hangs over the display's (mode.ts overhang) */
+const sightBottom = () => innerHeight - bigMode.cut.bottom;
+const sightRight = () => innerWidth - bigMode.cut.right;
 /** where the page begins in the window: under the top bar */
 const pageTop = () => document.querySelector(FIXED)?.getBoundingClientRect().bottom ?? 0;
 /** nothing of it is on screen (the page was scrolled away from it by the stick, the wheel or a finger) */
 export function outOfSight(el: HTMLElement): boolean {
   if (el.closest(FIXED + ", .bs-layer")) return false;
   const r = el.getBoundingClientRect();
-  return r.bottom <= pageTop() + 4 || r.top >= innerHeight - 4 || r.right <= 4 || r.left >= innerWidth - 4;
+  return r.bottom <= pageTop() + 4 || r.top >= sightBottom() - 4 || r.right <= 4 || r.left >= sightRight() - 4;
 }
 /** the pill a card shows on hover for its one action (ui/poster.tsx): what X presses while the card has the focus */
 export function cardAction(el: HTMLElement | null): HTMLElement | null {
@@ -117,7 +121,7 @@ export function reveal(el: HTMLElement, how: boolean | "x" | "y" = true) {
   if (el.closest(".tb, .bs-layer")) return;
   const behavior: ScrollBehavior = reduced() ? "auto" : "smooth";
   const r = el.getBoundingClientRect();
-  if (!scroller(el) && r.bottom + scrollY < innerHeight * 0.92) { if (scrollY > 0) scrollTo({ top: 0, behavior }); return; }
+  if (!scroller(el) && r.bottom + scrollY < sightBottom() * 0.92) { if (scrollY > 0) scrollTo({ top: 0, behavior }); return; }
   el.scrollIntoView({ block: how === "x" ? "nearest" : "center", inline: how === "y" ? "nearest" : "center", behavior });
 }
 
@@ -226,8 +230,8 @@ export class PadNav extends Nav {
   /** the first thing of the page that is wholly on screen, as the page reads; else the first that shows at all */
   inSight(): HTMLElement | null {
     const top = pageTop();
-    const page = this.candidates().filter(e => !e.closest(FIXED)).map(e => [e, e.getBoundingClientRect()] as const).filter(([, r]) => r.bottom > top + 4 && r.top < innerHeight - 4);
-    const whole = page.filter(([, r]) => r.top >= top - 2 && r.bottom <= innerHeight + 2);
+    const page = this.candidates().filter(e => !e.closest(FIXED)).map(e => [e, e.getBoundingClientRect()] as const).filter(([, r]) => r.bottom > top + 4 && r.top < sightBottom() - 4);
+    const whole = page.filter(([, r]) => r.top >= top - 2 && r.bottom <= sightBottom() + 2);
     const read = (a: readonly [HTMLElement, DOMRect], b: readonly [HTMLElement, DOMRect]) => (Math.abs(a[1].top - b[1].top) > 12 ? a[1].top - b[1].top : a[1].left - b[1].left);
     return ((whole.length ? whole : page).sort(read)[0]?.[0]) ?? null;
   }
@@ -322,7 +326,7 @@ export class PadNav extends Nav {
       // a page that is a list to walk (the Library's list): the list itself
       ?? (layer === document ? mine.find(e => e.getAttribute("role") === "listbox") : undefined)
       // a page's main action: its big white button (Install, Play), when it is on the first screen
-      ?? (layer === document ? mine.find(e => e.matches(".btn.primary.s48, .btn.primary.s44") && at.get(e)!.top < innerHeight) : undefined)
+      ?? (layer === document ? mine.find(e => e.matches(".btn.primary.s48, .btn.primary.s44") && at.get(e)!.top < sightBottom()) : undefined)
       ?? mine[0] ?? c[0] ?? null;
     this.current?.classList.remove("f");
     if (this.current) this.before = this.current;

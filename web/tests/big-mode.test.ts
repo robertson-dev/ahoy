@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import "./harness";
-import { HAND_LINES, ZOOM_LINES, Zoomer, inHands, linesFor, startsBig, zoomFor, type Display } from "../src/big/mode";
+import { HAND_LINES, ZOOM_LINES, Zoomer, inHands, linesFor, overhang, startsBig, zoomFor, type Display } from "../src/big/mode";
 import { BIG_TABS, tabOf, tabStep, typeKey } from "../src/big/index";
 import { hoverTwin, withoutHoverQuery } from "../src/big/hover";
 
@@ -62,6 +62,36 @@ describe("a screen held in the hands", () => {
     expect(startsBig(null, d(1080, true))).toBe(false);
     expect(startsBig(false, d(720, true))).toBe(false);
     expect(startsBig(true, d(1440, false))).toBe(true);
+  });
+});
+
+describe("a display smaller than the launcher's smallest window", () => {
+  // the launcher's window is at least 980 x 640 of Windows' points, also on the whole display (measured: 646 tall there)
+  test("the window hangs over the display's bottom edge, and the page is told by how much of its own pixels", () => {
+    // 1080 lines at Windows' 175%: a display of 1098 x 618 points, the window 1098 x 646
+    expect(overhang({ outer: [1098, 646], inner: [1098, 646], screen: [1098, 618] })).toEqual({ right: 0, bottom: 28 });
+    // the same window with the page zoomed 1.03: 28 points are 28 of 627 pixels
+    expect(overhang({ outer: [1098, 646], inner: [1066, 627], screen: [1098, 618] })).toEqual({ right: 0, bottom: 28 });
+    // at 200%: 960 x 540 points, the window 990 x 645
+    expect(overhang({ outer: [990, 645], inner: [990, 645], screen: [960, 540] })).toEqual({ right: 30, bottom: 105 });
+  });
+  test("nothing while the window fits its display, or is a window on it", () => {
+    expect(overhang({ outer: [1280, 720], inner: [1067, 600], screen: [1280, 720] })).toEqual({ right: 0, bottom: 0 });   // 150%: the whole display, exactly
+    expect(overhang({ outer: [1281, 721], inner: [1067, 600], screen: [1280, 720] })).toEqual({ right: 0, bottom: 0 });   // a point of rounding is no overhang
+    expect(overhang({ outer: [1292, 678], inner: [1280, 672], screen: [1280, 720] })).toEqual({ right: 0, bottom: 0 });   // a window above the taskbar
+    expect(overhang({ outer: [1360, 860], inner: [1360, 860], screen: [1920, 1080] })).toEqual({ right: 0, bottom: 0 });
+    expect(overhang({ outer: [0, 0], inner: [0, 0], screen: [0, 0] })).toEqual({ right: 0, bottom: 0 });
+  });
+  test("the lines are counted in what the display shows: 600 of them in 618 points, not in the window's 646", () => {
+    const w = { zoom: 1 };
+    const inner = () => Math.round(646 / w.zoom);            // the window stays 646 points tall, whatever the zoom
+    const cut = () => overhang({ outer: [1098, 646], inner: [Math.round(1098 / w.zoom), inner()], screen: [1098, 618] }).bottom;
+    const page = new Zoomer(f => { w.zoom = f; }, () => inner() - cut(), () => 600);
+    page.fit(true); page.fit(true);
+    expect(w.zoom).toBe(1.03);                               // (by the window's own height it was 1.08, and 46 pixels of the page were off the screen)
+    page.fit(true); page.fit(true);
+    expect(w.zoom).toBe(1.03);                               // and it rests there
+    expect(inner() - cut()).toBeGreaterThanOrEqual(597);     // the display shows the page's 600 lines, give or take the rounding
   });
 });
 
