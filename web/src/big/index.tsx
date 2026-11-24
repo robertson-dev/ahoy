@@ -150,6 +150,9 @@ const quickOf = (el: HTMLElement | null): string | null => {
 };
 /** right stick: how far a full tilt scrolls each frame, in the page's pixels */
 const STICK_SPEED = 26;
+/** how long the focus goes with a page that is still filling in (while the person has not moved), and how long a page come
+ *  back to is given to show what was opened from it before the focus starts at the page's top instead */
+const LAND_FOLLOW = 12_000, LAND_BACK = 1500;
 
 function Couch() {
   const router = useNavigate();
@@ -279,8 +282,15 @@ function Couch() {
     if (choosing) return;
     if (!document.querySelector(".tb")) return;             // outside the app (the sign-in page): no tabs, no search, no menu
     switch (c) {
-      case "prevTab": return router(tabStep(loc.pathname, -1));
-      case "nextTab": return router(tabStep(loc.pathname, 1));
+      case "prevTab": case "nextTab": {
+        // a dialog or a picture over the page keeps the page under it: the tabs wait until it is closed (a panel of the bar
+        // goes with the page it was opened on)
+        const over = nav.layer();
+        if (over !== document && !(over as HTMLElement).matches(".tb-panel")) return;
+        // counted from where the address is now, not from the page as it was last drawn: a second press before the next
+        // page has drawn goes on from the first instead of asking for the same tab again
+        return router(tabStep(window.location.pathname, c === "nextTab" ? 1 : -1));
+      }
       case "downloads": {
         // X on a card: its own action, the pill a mouse sees on hover (Install, Play, Request)
         const act = nav.layer() === document ? cardAction(nav.current) : null;
@@ -366,7 +376,7 @@ function Couch() {
         for (const p of navigator.getGamepads?.() ?? []) {
           if (!p) continue;
           const y = p.axes[3] ?? 0;
-          if (Math.abs(y) > 0.2) scrollBy(0, y * STICK_SPEED);
+          if (Math.abs(y) > 0.2) { scrollBy(0, y * STICK_SPEED); touched.current = true; }   // the page is theirs: no landing scrolls it back
         }
       }
       raf = requestAnimationFrame(tick);
@@ -384,25 +394,39 @@ function Couch() {
   useLayoutEffect(() => { key.current = loc.key; }, [loc.key]);
   // what is focused is written down under its page as it changes (when the page goes, its elements are gone already)
   useEffect(() => {
-    nav.onFocus = el => { if (el && !el.closest(".bs-layer, .tb")) left.current.set(key.current, describe(el)); setQuick(quickOf(el)); };
+    // (what is focused in something open over the page is not the page's: coming back finds the page without it)
+    nav.onFocus = el => { if (el && !el.closest(".bs-layer, .tb, .tb-panel, .viewer, .overlay")) left.current.set(key.current, describe(el)); setQuick(quickOf(el)); };
     return () => { nav.onFocus = () => {}; };
   }, []);
   useEffect(() => {
     closeSheets();
     touched.current = false;
     const was = how === "POP" ? left.current.get(loc.key) : undefined;
-    let tries = 0, t = 0;
+    // A page fills in over a moment, or over seconds on a slow line (its hero, its rows): the focus settles on what is there
+    // and goes with the page as more arrives (the tab in the bar, then the page's first thing, then its main action), until
+    // the person moves or the page has had its time. Giving up after a second left the focus in the bar on a slow line.
+    const t0 = performance.now();
+    let changed = t0, landed = -1, t = 0, mine = false;
+    const mo = new MutationObserver(() => { changed = performance.now(); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    // a finger, the wheel, a click: the person is using the page another way, and the page is not scrolled back under them
+    const hands = () => { mine = true; };
+    const HANDS = ["wheel", "touchstart", "pointerdown"] as const;
+    for (const e of HANDS) addEventListener(e, hands, { passive: true, capture: true });
+    const end = () => { clearTimeout(t); mo.disconnect(); for (const e of HANDS) removeEventListener(e, hands, { capture: true }); };
     const land = () => {
-      if (touched.current) return;                           // the person is already moving about: the focus is theirs
+      if (touched.current || mine) return end();             // the person is already moving about: the focus is theirs
+      const now = performance.now();
       const again = was ? findAgain(was, nav.candidates()) : null;
-      if (again) { nav.refocus(again, true); return; }
-      // a page fills in over a moment (its hero, its rows): settle on what is there, and look again while more arrives
-      if (!was) nav.land();
-      if (tries++ < (was ? 12 : 6)) t = window.setTimeout(land, was ? 120 : 220);
-      else if (was) nav.land();
+      if (again) { nav.refocus(again, true); return end(); }
+      // Back: what was opened from this page is looked for first, and the page's own start only once that took too long
+      const fresh = changed > landed || !nav.current?.isConnected;
+      if (fresh && (!was || now - t0 > LAND_BACK)) { landed = now; nav.land(); }
+      if (now - t0 > LAND_FOLLOW) return end();
+      t = window.setTimeout(land, was && now - t0 <= LAND_BACK ? 120 : 200);
     };
     t = window.setTimeout(land, 80);
-    return () => clearTimeout(t);
+    return end;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loc.pathname]);
 

@@ -327,7 +327,10 @@ export class PadNav extends Nav {
       ?? (layer === document ? mine.find(e => e.getAttribute("role") === "listbox") : undefined)
       // a page's main action: its big white button (Install, Play), when it is on the first screen
       ?? (layer === document ? mine.find(e => e.matches(".btn.primary.s48, .btn.primary.s44") && at.get(e)!.top < sightBottom()) : undefined)
-      ?? mine[0] ?? c[0] ?? null;
+      ?? mine[0]
+      // a page with nothing to stand on yet (still loading): the tab it belongs to, lit in the bar, not the bar's first thing
+      ?? (layer === document ? c.find(e => e.matches(".tb-nav a.on")) : undefined)
+      ?? c[0] ?? null;
     this.current?.classList.remove("f");
     if (this.current) this.before = this.current;
     this.current = null;

@@ -16,6 +16,7 @@ export const NEWS: News[] = [
     { id: "setup-pad", needs: "0.14.0", text: "The first screen, where Ahoy asks for your server's address, works with a controller and has a keyboard of its own." },
     { id: "handheld", needs: "0.12.0", text: "On a handheld PC, Ahoy opens in Big screen at a larger size, and its controller works from the sign-in page on. Settings, This PC has both." },
     { id: "pad-moves", text: "In Big screen the controller shows where it is from the start and moves row by row. X does the highlighted game's own action." },
+    { id: "tabs-land", text: "In Big screen, LB and RB put you in the page they open, also when it takes a moment to load." },
   ] },
   { id: "2026-11-17-art", date: "2026-11-17", items: [
     { id: "stable-card-colours", text: "Game cards keep their artwork colours as you browse the carousel." },
