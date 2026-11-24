@@ -22,7 +22,8 @@ export function JourneyLine({ j, size = "sm", labels = true, className }: { j: J
           return <span key={`l${i}`} className={`jl-leg ${k}`} style={{ ["--i" as string]: i, ["--p" as string]: k === "part" ? Math.max(0, Math.min(1, j.progress ?? 0)) : 0 } as CSSProperties} />;
         })}
         {STOPS.map((_, i) => {
-          const k = i < j.done ? "done" : j.current === i ? "cur" : failed && i === 0 ? "fail" : "todo";
+          // ("failed", not "fail": .fail is the whole-page stop of ui/boundary, and its page-high box drew a red arc down the ticket)
+          const k = i < j.done ? "done" : j.current === i ? "cur" : failed && i === 0 ? "failed" : "todo";
           return <span key={`s${i}`} className={`jl-stop ${k}`} style={{ ["--i" as string]: i } as CSSProperties} />;
         })}
       </div>

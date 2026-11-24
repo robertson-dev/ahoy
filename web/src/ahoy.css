@@ -244,7 +244,7 @@ a.fpill:hover, button.fpill:hover { filter: brightness(1.12); }
 .jl-stop.done { background: var(--fg); }
 .jl-stop.cur { background: var(--fg); box-shadow: 0 0 0 3px var(--todo-fill), 0 0 0 5px rgba(242,242,242,.28); }
 .jl-stop.todo { background: var(--todo-fill); border: 2px solid rgba(255,255,255,.32); }
-.jl-stop.fail { background: var(--todo-fill); border: 2px solid var(--bad); }
+.jl-stop.failed { background: var(--todo-fill); border: 2px solid var(--bad); }
 .jl-words { position: absolute; left: 0; right: 0; top: 24px; margin: 0; padding: 0; list-style: none; height: 16px; }
 .jl-words li { position: absolute; top: 0; left: calc(var(--edge) + var(--i) * var(--step)); transform: translateX(-50%); font-size: 12px; font-weight: 500; line-height: 16px; color: var(--fg-2); white-space: nowrap; }
 .jl-words li:first-child { left: 0; transform: none; }

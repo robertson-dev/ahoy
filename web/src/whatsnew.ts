@@ -11,6 +11,12 @@ export interface NewsItem { id: string; text: string; needs?: string }
 export interface News { id: string; date: string; items: NewsItem[] }
 
 export const NEWS: News[] = [
+  { id: "2026-11-24-big-screen", date: "2026-11-24", items: [
+    { id: "big-edge", text: "In Big screen, the bottom of the screen says what the buttons do and shows the battery and the time. LB and RB are marked beside the tabs." },
+    { id: "hand-walls", needs: "0.12.0", text: "On a handheld PC, games stand five across, and a row is whole on the screen." },
+    { id: "hand-pages", needs: "0.12.0", text: "On a handheld PC, games on the way stand two to a row, Friends has people and Lately side by side, and Settings uses the screen's width." },
+    { id: "ticket-mark", text: "A game that didn't make it shows a small red mark on its line, not an arc across its card." },
+  ] },
   { id: "2026-11-23-handheld", date: "2026-11-23", items: [
     { id: "handheld-any-scale", needs: "0.14.0", text: "A handheld PC is known by the real size of its screen: Big screen fits it whatever Windows' scale is set to, and a television it is docked to gets the television's size." },
     { id: "setup-pad", needs: "0.14.0", text: "The first screen, where Ahoy asks for your server's address, works with a controller and has a keyboard of its own." },

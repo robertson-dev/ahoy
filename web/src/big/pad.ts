@@ -168,7 +168,14 @@ export class PadNav extends Nav {
     const line = !inBar && (dir === "up" || dir === "down") ? this.formStep(cur, dir) : null;
     if (line) { this.step(line, dir); return; }
     if (this.take(dir, e => !!e.closest(FIXED) === inBar)) return;
-    if (!inBar && dir === "up") this.take(dir, e => !!e.closest(FIXED));
+    if (!inBar && dir === "up") {
+      // into the bar. The tabs are entered at the one the page is under, not at whichever stands over where the step began:
+      // that is where LB and RB count from, and where the person is
+      if (!this.take(dir, e => !!e.closest(FIXED))) return;
+      const to = this.current;
+      const lit = to?.matches(".tb-nav a") ? to.closest(".tb-nav")?.querySelector<HTMLElement>("a.on") ?? null : null;
+      if (lit && lit !== to && usable(lit, false)) { this.focus(lit, false); this.trail = { from: cur, to: lit, dir }; }
+    }
     else if (inBar && dir === "down") { const top = pageTop(); this.take(dir, e => !e.closest(FIXED) && e.getBoundingClientRect().bottom > top + 8); }
   }
   /**

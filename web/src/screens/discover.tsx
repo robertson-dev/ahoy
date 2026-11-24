@@ -25,6 +25,7 @@ import { cleanName, listPath } from "../ui/words";
 import { featuredCandidates, releaseOf, uniq, useFeatured, useFit } from "./discover-parts";
 import { useSearchParams } from "react-router-dom";
 import { useUnderBar } from "../shell/context";
+import { useHands } from "../big";
 import { PlatformBrowser } from "./platforms";
 import "./discover.css";
 
@@ -105,8 +106,12 @@ function factsOf(i: DiscoverItem, t: ReturnType<typeof tracker>): ReactNode {
 
 /* ─────────── shelves ─────────── */
 
+/** the least a card is wide where the cards share the row (a handheld's big screen): five across its 971 */
+const HAND_CARD = 170;
+
 function Shelf({ id, title, all, allLabel, items, c }: { id: string; title: string; all: string; allLabel: string; items: DiscoverItem[]; c: LineCtx }) {
-  const [fit, n] = useFit(204, Math.min(12, items.length));
+  // (in the hands the cards share the row's width, five across: big.css)
+  const [fit, n] = useFit(useHands() ? HAND_CARD : 204, Math.min(12, items.length));
   if (!items.length) return null;
   return (
     <section className="dsc-sec" aria-labelledby={`dsc-${id}-h`} ref={fit}>

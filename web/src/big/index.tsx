@@ -27,6 +27,8 @@ import { PadNav, arrowKey, cardAction, describe, findAgain, isTextField, ownsArr
 import "./big.css";
 
 export const useBig = () => useSyncExternalStore(bigMode.subscribe, () => bigMode.on, () => false);
+/** is the big screen at a handheld's size (five games across a wall, not four and a gap)? */
+export const useHands = () => useSyncExternalStore(bigMode.subscribe, () => bigMode.hands, () => false);
 
 /** the tabs LB and RB walk, and which one a page belongs to (the top bar's own four) */
 export const BIG_TABS = ["/", "/discover", "/library", "/people"] as const;
@@ -129,13 +131,72 @@ function Chooser({ field, onDone }: { field: HTMLSelectElement; onDone: () => vo
   );
 }
 
-/* ─────────── what the buttons do, said at the bottom ─────────── */
+/* ─────────── the mode's bottom edge: what the buttons do, the battery and the time ─────────── */
 
 type Hint = [glyph: string, label: string, icon?: IconName];
-function Hints({ pad, hints }: { pad: boolean; hints: Hint[] }) {
+
+/** the time as this device writes it, turned over on the minute (the whole display is Ahoy's: nothing else shows a clock) */
+function useClock(): string {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    let t = 0;
+    const next = () => { t = window.setTimeout(() => { setNow(Date.now()); next(); }, 60_000 - (Date.now() % 60_000) + 40); };
+    next();
+    const back = () => { if (!document.hidden) setNow(Date.now()); };   // (timers sleep with the PC)
+    document.addEventListener("visibilitychange", back);
+    return () => { clearTimeout(t); document.removeEventListener("visibilitychange", back); };
+  }, []);
+  return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(now);
+}
+
+interface BatteryLike extends EventTarget { level: number; charging: boolean }
+const HAS_BATTERY = "ahoy.battery";
+/**
+ * This device's battery, where it has one. A PC without reads as full and charging for good, which is also what a handheld
+ * on its charger reads: a battery is known by having once been less than full or not charging, and that is kept on the device.
+ */
+function useBattery(): { level: number; charging: boolean } | null {
+  const [b, setB] = useState<{ level: number; charging: boolean } | null>(null);
+  useEffect(() => {
+    let batt: BatteryLike | null = null, gone = false;
+    const read = () => {
+      if (!batt || gone) return;
+      let known = false;
+      try { known = localStorage.getItem(HAS_BATTERY) === "1"; } catch { /* no storage: known for this stay only */ }
+      const real = known || batt.level < 1 || !batt.charging;
+      if (real && !known) try { localStorage.setItem(HAS_BATTERY, "1"); } catch { /* as above */ }
+      setB(real ? { level: batt.level, charging: batt.charging } : null);
+    };
+    const get = (navigator as Navigator & { getBattery?: () => Promise<BatteryLike> }).getBattery;
+    void get?.call(navigator).then(x => { if (gone) return; batt = x; read(); x.addEventListener("levelchange", read); x.addEventListener("chargingchange", read); }).catch(() => {});
+    return () => { gone = true; batt?.removeEventListener("levelchange", read); batt?.removeEventListener("chargingchange", read); };
+  }, []);
+  return b;
+}
+
+function Foot({ pad, hints }: { pad: boolean; hints: Hint[] }) {
+  const clock = useClock();
+  const batt = useBattery();
+  const pct = batt ? Math.round(batt.level * 100) : 0;
   return (
-    <div className="bs-hints" aria-hidden="true">
-      {hints.map(([g, label]) => <span key={label}><kbd className={pad && g.length === 1 ? "bs-pad" : undefined} data-g={pad ? g : undefined}>{g}</kbd>{label}</span>)}
+    <div className="bs-foot" aria-hidden="true">
+      <div className="bs-hints">
+        {hints.map(([g, label]) => <span key={label}><kbd className={pad && g.length === 1 ? "bs-pad" : undefined} data-g={pad ? g : undefined}>{g}</kbd>{label}</span>)}
+      </div>
+      <div className="bs-status">
+        {batt && (
+          <span className={`bs-batt${batt.charging ? " charging" : pct <= 15 ? " low" : ""}`}>
+            <svg viewBox="0 0 27 14" width="27" height="14">
+              <rect x="0.75" y="0.75" width="22.5" height="12.5" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".5" />
+              <rect x="24.5" y="4.5" width="2" height="5" rx="1" fill="currentColor" opacity=".5" />
+              <rect className="bs-batt-fill" x="3" y="3" width={Math.max(2, 18 * batt.level)} height="8" rx="2" fill="currentColor" />
+              {batt.charging && <path d="M13.2 1.6 8.6 7.7h3.1l-1 4.7 4.7-6.2h-3.1z" fill="var(--bg)" stroke="var(--bg)" strokeWidth=".6" strokeLinejoin="round" />}
+            </svg>
+            {pct}%
+          </span>
+        )}
+        <span className="bs-clock">{clock}</span>
+      </div>
     </div>
   );
 }
@@ -368,6 +429,13 @@ function Couch() {
     return () => { removeEventListener("mousemove", mouse); document.removeEventListener("focusin", focus); delete document.documentElement.dataset.drive; nav.mark(null); nav.current = null; };
   }, [drive]);
 
+  // a pad was seen: the tabs carry its LB and RB from then on (not only while it drives: the bar must not shift under a mouse)
+  useEffect(() => {
+    if (!pad) return;
+    document.documentElement.dataset.pad = "";
+    return () => { delete document.documentElement.dataset.pad; };
+  }, [pad]);
+
   // the right stick scrolls; the pointer hides while it rests
   useEffect(() => {
     let raf = 0, idle = 0;
@@ -469,12 +537,13 @@ function Couch() {
   const hints: Hint[] = typing
     ? [[pad ? "A" : "Enter", "Type"], [pad ? "X" : "⌫", "Delete"], [pad ? "Y" : "Space", "Space"], [pad ? "☰" : "Enter", nextEmptyField(typing) ? "Next" : "Done"], [pad ? "B" : "Esc", "Close"]]
     : !inApp ? [[pad ? "A" : "Enter", "Select"], [pad ? "B" : "Esc", "Back"]]
-    : pad ? [["A", "Select"], ["B", "Back"], ...(quick ? [["X", quick] as Hint] : []), ["Y", "Search"], ["LB RB", "Tabs"], ["☰", "Menu"]]
+    // (with a pad the tabs themselves say LB and RB, where they are: big.css)
+    : pad ? [["A", "Select"], ["B", "Back"], ...(quick ? [["X", quick] as Hint] : []), ["Y", "Search"], ["☰", "Menu"]]
     : [["Enter", "Select"], ["Esc", "Back"], ["/", "Search"], ["PgUp PgDn", "Tabs"], ["F11", "Leave"]];
   return <>
     {typing && <Keyboard field={typing} onDone={doneTyping} />}
     {choosing && <Chooser field={choosing} onDone={() => { const f = choosing; setChoosing(null); queueMicrotask(() => nav.refocus(f)); }} />}
-    {createPortal(<Hints pad={pad} hints={hints} />, document.body)}
+    {createPortal(<Foot pad={pad} hints={hints} />, document.body)}
   </>;
 }
 

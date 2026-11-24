@@ -1,7 +1,7 @@
 /*
  * Big screen (big/): the app as it is, on the whole display, larger (the launcher zooms the page). No page is restyled
- * here. What is here: how the pad's focus looks, the mode's own two sheets (the keyboard, a choice list) and the line that
- * says what the buttons do. The focus shows only while a pad or the keys drive (html[data-drive="pad"]); with the mouse,
+ * here but for its walls of games on a handheld, which share the width there. What is here: how the pad's focus looks, the
+ * mode's own two sheets (the keyboard, a choice list) and its bottom edge (what the buttons do, the battery, the time). The focus shows only while a pad or the keys drive (html[data-drive="pad"]); with the mouse,
  * the pointer says where the person is.
  *
  * The focus, in the app's own words: a button, a pill or a tab turns white with dark ink (what the primary button already
@@ -18,13 +18,13 @@ html[data-big][data-still], html[data-big][data-still] * { cursor: none !importa
 html[data-big] { --page-r: calc(max(0px, var(--page-x) - var(--sb)) + var(--cut-r, 0px)); }
 html[data-big] .tb { right: var(--cut-r, 0px); }
 html[data-big] :is(.overlay, .viewer, .bs-choose, .bs-osk) { right: var(--cut-r, 0px); bottom: var(--cut-b, 0px); }
-html[data-big] .toasts { right: calc(24px + var(--cut-r, 0px)); bottom: calc(24px + var(--cut-b, 0px)); }
+html[data-big] .toasts { right: calc(var(--page-x) + var(--cut-r, 0px)); bottom: calc(48px + var(--cut-b, 0px)); z-index: 211; }   /* over the mode's bottom edge, clear of its line */
 html[data-big] :is(.home, .home-empty, .ll) { height: calc(100vh - var(--cut-b, 0px)); }
 html[data-big] .ll.narrow { height: calc(100vh - var(--bar-h) - var(--cut-b, 0px)); }
 html[data-big] .modal { max-height: calc(100vh - 48px - var(--cut-b, 0px)); }
-/* (and a dialog stands above the hint line while that shows, not under its end) */
-html[data-drive="pad"] .overlay { padding-bottom: 64px; }
-html[data-drive="pad"] .modal { max-height: calc(100vh - 88px - var(--cut-b, 0px)); }
+/* (and a dialog stands above the mode's bottom edge, not under it) */
+html[data-big] .overlay { padding-bottom: 64px; }
+html[data-big] .modal { max-height: calc(100vh - 88px - var(--cut-b, 0px)); }
 html[data-big] .viewer .stage { width: min(1280px, calc(100vw - 160px - var(--cut-r, 0px))); max-height: calc(100vh - 120px - var(--cut-b, 0px)); }
 html[data-big] .tb-panel { max-height: calc(100vh - var(--bar-h) - 16px - var(--cut-b, 0px)); }
 html[data-big] .tb.solid .tb-panel { max-height: calc(100vh - 88px - var(--cut-b, 0px)); }
@@ -33,8 +33,12 @@ html[data-big] .page { padding-bottom: calc(72px + var(--cut-b, 0px)); }   /* th
 /* the Home is one screen, its fan cut by the window's bottom edge: with room under it the page scrolled when the fan took the
    focus, to a bare strip under the cut cards */
 html[data-big] .page:has(> .home), html[data-big] .page:has(.ll) { padding-bottom: 0; }
-/* the Library's list runs to the window's bottom edge: while the hint line shows, its pane ends above it */
-html[data-drive="pad"] .ll { padding-bottom: 64px; }
+/* the Library's list runs to the window's bottom edge: its pane ends above the mode's own */
+html[data-big] .ll { padding-bottom: 64px; }
+/* (a game's shelf of others scrolls sideways too: room over it for the focused card's lift and edge) */
+html[data-big] .gp-shelf { margin-top: 6px; padding-top: 14px; }
+/* Settings' chips scroll sideways in a strip that cuts what stands out of it: room for the focused chip's lift and glow */
+html[data-big] .st-index ul { margin: -10px -8px; padding: 10px 8px; }
 html[data-big] :is(a, button, input, select, textarea, [tabindex]) { scroll-margin: 112px calc(24px + var(--cut-r, 0px)) calc(96px + var(--cut-b, 0px)) 24px; }
 /* the app's amber focus ring gives way to the couch's focus */
 html[data-big] :focus-visible, html[data-big] .tf:has(input:focus-visible), html[data-big] .tb-search:has(input:focus-visible), html[data-big] .sel select:focus-visible { outline: none; }
@@ -44,6 +48,34 @@ html[data-big] :focus-visible, html[data-big] .tf:has(input:focus-visible), html
 html[data-big] :is(.sx-field:has(input:focus-visible), .pf-now:has(> a.pf-now-link:focus-visible), .st-hue input:focus-visible ~ .st-hue-thumb, .ll-clear:focus-visible) { outline: none; }
 html[data-big] .ll-list:focus-visible .ll-row.on, html[data-big] .ll-list.keys .ll-row.on,
 html[data-big] .ll-list:focus-visible > :is(.ll-quiet, .ll-empty) { box-shadow: none; }
+
+/* ── in the hands (mode.ts: 600 of the page's lines on the display, about 1067 across) ──
+   The walls are drawn for a desk: at this width four 204 cards and a gap beside them, the row's names under the screen's
+   edge. Here the cards share the row instead: five across from margin to margin, and a row is whole on the screen. */
+html[data-hands] :is(.lib-wall, .sx-wall) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+html[data-hands] .dsc-row > li { flex: 0 1 calc((100% - 96px) / 5); min-width: 0; }
+html[data-hands] :is(.lib-wall, .sx-wall, .dsc-row) .pc:not(.sm) { width: auto; }
+html[data-hands] :is(.lib-wall, .sx-wall, .dsc-row) .pc:not(.sm) .pa { width: 100% !important; height: auto !important; aspect-ratio: 204 / 304; }
+html[data-hands] :is(.lib-wall, .sx-wall, .dsc-row) .pc:not(.sm) .pc-act { top: auto; bottom: calc(52px + var(--in)); }   /* (the name and the line under the art are 52) */
+html[data-hands] .lib-ph-art { width: 100%; height: auto; aspect-ratio: 204 / 304; }
+/* (and the Library's first row is whole on its first screen, names and all) */
+html[data-hands] .lib { padding-top: 12px; }
+html[data-hands] .lib-shelves > .lib-sec:first-child { margin-top: 28px; }
+/* On the way: two tickets to a row. The desk asks 1100 for that; here a ticket's art is a size smaller (104) and its info
+   column keeps the 312 the desk gives it, so who asked and Cancel still fit */
+html[data-hands] .tk-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; }
+html[data-hands] .tk { grid-template-columns: 104px minmax(0, 1fr); column-gap: 20px; max-width: none; min-height: 0; }
+html[data-hands] :is(.tk-art, .tk-art .pa, .lib-ph-tk-art) { width: 104px !important; height: 156px !important; }
+html[data-hands] .tk-info { min-height: 156px; }
+html[data-hands] .tk-info > .jl { margin-top: 20px; }
+/* Friends: people and Lately side by side, as the desk has them from 1080 (this page is 13 short of that, and stacked) */
+html[data-hands] .fr-cols { display: grid; }
+html[data-hands] .fr-people { max-width: none; }
+html[data-hands] .fr-lately { margin-top: 0; }
+/* Settings: the column takes the page's width, and its first panel starts higher */
+html[data-hands] .st { padding-top: 16px; }
+html[data-hands] .st-index { margin-top: 8px; }
+html[data-hands] .st-main { max-width: none; }
 
 /* ── the focus ── */
 /* anything else (a row of a list or a panel, a card, a link in a line): a thin white edge around it, like a poster's */
@@ -133,12 +165,27 @@ html[data-drive="pad"] .bs-key[data-pf] .ic { color: inherit; }
 .bs-opt.on { font-weight: 700; }
 html[data-drive="pad"] .bs-opt[data-pf] { outline: none; background: #fff; color: #101010; }
 
-/* ── what the buttons do: one quiet line, bottom left ── */
-.bs-hints { position: fixed; left: var(--page-x); bottom: calc(16px + var(--cut-b, 0px)); z-index: 210; display: none; align-items: center; gap: 18px; height: 36px; padding: 0 16px 0 12px; border-radius: 18px; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-line); color: var(--fg-2); font: 500 13px/1 var(--ui); white-space: nowrap; pointer-events: none; }
-html[data-drive="pad"] .bs-hints { display: inline-flex; }
-body:has(.viewer) .bs-hints { display: none; }                         /* a trailer has the whole screen, its own controls at the bottom */
-.bs-hints span { display: inline-flex; align-items: center; gap: 7px; }
-.bs-hints kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--hair-6); color: var(--fg); font: 700 11px/1 var(--ui); }
+/* ── the mode's bottom edge ──
+   The display is Ahoy's from edge to edge, so the mode has an edge of its own at the bottom as the bar is at the top: the page
+   sinks into the dark there instead of running under a note that floats on it, and on the dark stand what the buttons do
+   (left, while a pad or the keys drive) and what a whole display otherwise hides: the battery and the time (right). */
+/* (it runs on under the display's edge where the window hangs over it, so no sliver of the page shows beneath its line) */
+.bs-foot { position: fixed; left: 0; right: var(--cut-r, 0px); bottom: 0; z-index: 210; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; height: calc(60px + var(--cut-b, 0px)); padding: 0 var(--page-x) calc(6px + var(--cut-b, 0px)); background: linear-gradient(180deg, rgba(16,16,16,0), rgba(16,16,16,.9) 20px, #101010 24px); color: var(--fg-2); font: 500 13px/1 var(--ui); white-space: nowrap; pointer-events: none; }
+body:has(.viewer) .bs-foot { display: none; }                          /* a trailer has the whole screen, its own controls at the bottom */
+.bs-hints { display: none; align-items: center; gap: 22px; height: 24px; min-width: 0; }
+html[data-drive="pad"] .bs-hints { display: flex; }
+.bs-hints span { display: inline-flex; align-items: center; gap: 8px; }
+.bs-hints kbd, html[data-big][data-pad] .tb-nav::before, html[data-big][data-pad] .tb-nav::after { display: inline-grid; place-items: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--hair-6); color: var(--fg); font: 700 11px/1 var(--ui); }
 .bs-hints kbd.bs-pad { padding: 0; border-radius: 50%; }
+.bs-status { display: flex; align-items: center; gap: 18px; height: 24px; margin-left: auto; color: var(--fg); font: 600 14px/1 var(--ui); font-variant-numeric: tabular-nums; }
+.bs-batt { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-2); }
+.bs-batt svg { color: var(--fg); }
+.bs-batt.low, .bs-batt.low svg { color: #e0675f; }
+/* the tabs are walked with LB and RB: they say so where they stand, once a pad has been seen */
+html[data-big][data-pad] .tb-nav::before { content: "LB"; margin-right: -4px; color: var(--fg-2); }
+html[data-big][data-pad] .tb-nav::after { content: "RB"; margin-left: -4px; color: var(--fg-2); }
+/* nothing of a desktop's window is left in the mode: the stick, the wheel and a finger scroll, no bar is drawn for it */
+html[data-big], html[data-big] * { scrollbar-width: none; }
+html[data-big] ::-webkit-scrollbar { display: none; }
 
 @media (prefers-reduced-motion: reduce) { .bs-osk, .bs-choose, .bs-choose-box { animation: none !important; } .bs-caret { animation: none; } html[data-big] .pa, .bs-key { transition: none; } }

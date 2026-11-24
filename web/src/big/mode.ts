@@ -194,10 +194,14 @@ function learnFromBrowser() {
   }).catch(() => { /* not allowed, or not there: by the touch screen and the size alone */ });
 }
 
+/** is the big screen at the handheld's size right now (HAND_LINES of the page on the display: the launcher zooms it)? */
+const inHandsNow = () => on && nativeZoom && linesFor(size, display()) === HAND_LINES;
 /** the page zoomed so the window is ZOOM_LINES tall; again whenever the window's real size changes (another display) */
 function fit() {
   measure();
   if (nativeZoom) zoomer.fit(on);
+  // the pages lay their walls out for a handheld's width under this mark (big.css)
+  if (typeof document !== "undefined") { if (inHandsNow()) document.documentElement.dataset.hands = ""; else delete document.documentElement.dataset.hands; }
 }
 let fitTimer = 0;
 const onResize = () => { clearTimeout(fitTimer); fitTimer = window.setTimeout(fit, 150); };
@@ -229,6 +233,8 @@ export const bigMode = {
   /** the size the person picked for this device ("auto": by the display), and the lines that comes to on this display */
   get size() { return size; },
   get lines() { return linesFor(size, display()); },
+  /** is it at the handheld's size (the pages' walls are laid out for that width)? */
+  get hands() { return inHandsNow(); },
   setSize(next: BigSize) { if (!BIG_SIZES.includes(next) || next === size) return; size = next; keep(SIZE_KEY, next === "auto" ? null : next); fit(); tell(); },
   /** does Ahoy open in the big screen on this device (the person's choice, else by the display)? */
   get startsBig() { return startsBig(startChoice, display()); },
