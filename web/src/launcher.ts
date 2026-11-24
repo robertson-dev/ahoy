@@ -27,7 +27,14 @@ export type LauncherEvent = InstallProgress
   /** the launcher asks for the big screen (its pad button set to open it, a start with --big); on: false asks to leave it */
   | { type: "big"; on?: boolean }
   /** a notification of the launcher's was clicked (its window is in front by now): the page it names is to be opened */
-  | { type: "open"; route: string };
+  | { type: "open"; route: string }
+  /** the window is on another display, or more is known of the one it is on (launchers from 0.14, feature "display") */
+  | { type: "display"; display: LauncherDisplay };
+
+/** what the launcher knows of the display its window is on (0.14, feature "display"): whether it is built into the PC (null:
+ *  not known), its real size as the monitor says it (millimetres to the centimetre; `inches` is the diagonal), the diagonal of
+ *  the PC's own built-in panel whichever display the window is on, and the display in Windows' scaled points with that scale */
+export interface LauncherDisplay { internal: boolean | null; mm: { width: number; height: number } | null; inches: number | null; panel: number | null; points: { width: number; height: number }; scale: number }
 
 /** what the pad's home button (Xbox, PS) does while the launcher runs: nothing, bring the window to the front, or that and the big screen */
 export type PadButton = "off" | "show" | "big";
@@ -61,8 +68,10 @@ export interface LauncherBridge {
   /** launchers from 0.8 on go fullscreen natively (feature "fullscreen"), so Esc stays the page's key */
   fullscreen?(on: boolean): Promise<boolean>;
   isFullscreen?(): Promise<boolean>;
-  /** launchers from 0.12 (feature "zoom"): the page's own zoom (1 is its real size); the big screen is the app zoomed for a television */
+  /** launchers from 0.12 (feature "zoom"): the page's own zoom (1 is its real size, never under it before 0.14); the big screen is the app zoomed for a television */
   zoom?(factor: number): Promise<number>;
+  /** launchers from 0.14 (feature "display"): the display the window is on. Feature "zoom-out" (0.14): zoom() goes down to 0.5 */
+  display?(): Promise<LauncherDisplay>;
   /** launchers from 0.12 (feature "big"): was the big screen asked for before the page could hear it (--big, the pad button)? Asked once */
   wantsBig?(): Promise<boolean>;
   /** launchers from 0.13 (feature "notify"): a Windows notification. Shown only while the launcher's window is not in front

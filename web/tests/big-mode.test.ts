@@ -6,7 +6,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import "./harness";
-import { HAND_LINES, ZOOM_LINES, Zoomer, inHands, linesFor, overhang, startsBig, zoomFor, type Display } from "../src/big/mode";
+import { HAND_INCHES, HAND_LINES, ZOOM_LINES, ZOOM_OUT, Zoomer, inHands, knownDisplay, linesFor, overhang, startsBig, zoomFor, type Display } from "../src/big/mode";
 import { BIG_TABS, tabOf, tabStep, typeKey } from "../src/big/index";
 import { hoverTwin, withoutHoverQuery } from "../src/big/hover";
 
@@ -23,6 +23,16 @@ describe("how far the page is zoomed", () => {
     expect(zoomFor(600)).toBe(1);
     expect(zoomFor(4320)).toBe(4);
     for (const odd of [0, -5, NaN, Infinity]) expect(zoomFor(odd)).toBe(1);
+  });
+  test("smaller than the page is only where the launcher can zoom out (0.14): down to a half", () => {
+    expect(ZOOM_OUT).toBe(0.5);
+    expect(zoomFor(540, 720, ZOOM_OUT)).toBe(0.75);          // 1080 lines at Windows' 200%: the app as a 1280 x 720 window again
+    expect(zoomFor(540, HAND_LINES, ZOOM_OUT)).toBe(0.9);    // the handheld at 200%: 1067 x 600, as at any other scale
+    expect(zoomFor(617, HAND_LINES, ZOOM_OUT)).toBe(1.03);   // at 175%
+    expect(zoomFor(300, 720, ZOOM_OUT)).toBe(0.5);           // never under a half
+    expect(zoomFor(1080, 720, ZOOM_OUT)).toBe(1.5);          // a television is as it was
+    expect(zoomFor(540, 720)).toBe(1);                       // an older launcher: the page's own size, as before
+    for (const odd of [0, -5, NaN, Infinity]) expect(zoomFor(odd, 720, ZOOM_OUT)).toBe(1);
   });
 });
 
@@ -62,6 +72,50 @@ describe("a screen held in the hands", () => {
     expect(startsBig(null, d(1080, true))).toBe(false);
     expect(startsBig(false, d(720, true))).toBe(false);
     expect(startsBig(true, d(1440, false))).toBe(true);
+  });
+});
+
+describe("a display the launcher has measured (0.14)", () => {
+  /** as above, with the launcher's word: built in or plugged in, the display's diagonal, the PC's own panel's */
+  const m = (lines: number, touch: boolean, internal: boolean | null, inches: number | null, panel: number | null = internal ? inches : null): Display => ({ lines, touch, internal, inches, panel });
+  test("a built-in display under about ten inches is in the hands at any scale of Windows, touch screen or not", () => {
+    expect(HAND_INCHES).toBe(9.5);
+    for (const lines of [540, 617, 720, 864, 1080]) expect(inHands(m(lines, true, true, 6.9))).toBe(true);   // 200%, 175%, 150%, 125%, 100%
+    expect(inHands(m(1080, false, true, 6.9))).toBe(true);
+    expect(inHands(m(1067, true, true, 8.8))).toBe(true);    // 2560 x 1600 on 8.8 inches at 150%: taller than 800 points
+    expect(linesFor("auto", m(1080, true, true, 6.9))).toBe(600);
+    expect(zoomFor(1080, linesFor("auto", m(1080, true, true, 6.9)))).toBe(1.8);   // at 100%: the same 1067 x 600
+  });
+  test("a larger built-in display is not, however short and touched", () => {
+    expect(inHands(m(768, true, true, 13.9))).toBe(false);   // a small touch laptop: the page alone took it for a handheld
+    expect(inHands(m(800, true, true, 9.7))).toBe(false);    // 10.1 inches, as its monitor rounds it down
+    expect(linesFor("auto", m(768, true, true, 13.9))).toBe(720);
+  });
+  test("a display that is plugged in is not: the handheld in its dock, over plain http too", () => {
+    expect(inHands(m(720, true, false, 72.3, 6.9))).toBe(false);
+    expect(inHands(m(720, true, false, null, 6.9))).toBe(false);
+    expect(linesFor("auto", m(720, true, false, 72.3, 6.9))).toBe(720);
+  });
+  test("where the launcher could not measure it, the page's own rule stands", () => {
+    expect(inHands(m(720, true, true, null))).toBe(true);
+    expect(inHands(m(720, true, null, null))).toBe(true);
+    expect(inHands(m(1080, true, true, null))).toBe(false);
+    expect(inHands(m(720, false, null, null))).toBe(false);
+  });
+  test("opens in the big screen where the PC's own panel is a handheld's, whichever display the window is on", () => {
+    expect(startsBig(null, m(1080, true, true, 6.9))).toBe(true);            // the handheld at 100%
+    expect(startsBig(null, m(1440, false, false, 72.3, 6.9))).toBe(true);    // in its dock, on a television of any size and scale
+    expect(startsBig(null, m(768, true, true, 13.9))).toBe(false);           // the touch laptop
+    expect(startsBig(null, m(720, true, false, 72.3, null))).toBe(true);     // no panel known: the page's own rule, as before
+    expect(startsBig(null, m(1440, false, false, 31.5, null))).toBe(false);
+    expect(startsBig(false, m(720, true, true, 6.9))).toBe(false);           // the person's own choice still wins
+  });
+  test("the launcher's word is taken only as far as it is one", () => {
+    expect(knownDisplay({ internal: true, mm: { width: 150, height: 90 }, inches: 6.9, panel: 6.9, points: { width: 1280, height: 720 }, scale: 1.5 })).toEqual({ internal: true, inches: 6.9, panel: 6.9 });
+    expect(knownDisplay({ internal: false, inches: null, panel: null })).toEqual({ internal: false, inches: null, panel: null });
+    expect(knownDisplay({ internal: "yes", inches: "7", panel: -1 })).toEqual({ internal: null, inches: null, panel: null });
+    expect(knownDisplay({ inches: 0, panel: NaN })).toEqual({ internal: null, inches: null, panel: null });
+    for (const none of [null, undefined, "display", 7]) expect(knownDisplay(none)).toBeNull();
   });
 });
 
@@ -150,6 +204,19 @@ describe("the page's zoom follows the mode", () => {
     expect(w.zoom).toBe(1);
     page.fit(false);
     expect(w.zoom).toBe(1);
+  });
+  test("a display with fewer points than the lines to show: zoomed out where the launcher can, at its own size where it cannot", () => {
+    const w = { zoom: 1, lines: 540 };                       // 1080 lines at Windows' 200%
+    const page = new Zoomer(f => { w.zoom = f; }, () => Math.round(w.lines / w.zoom), () => 600, ZOOM_OUT);
+    page.fit(true); page.fit(true);
+    expect(w.zoom).toBe(0.9);                                // the page lays out 600 lines
+    page.fit(true);
+    expect(w.zoom).toBe(0.9);                                // and stays
+    page.fit(false);
+    expect(w.zoom).toBe(1);
+    const old = new Zoomer(f => { w.zoom = f; }, () => Math.round(w.lines / w.zoom), () => 600);
+    old.fit(true); old.fit(true);
+    expect(w.zoom).toBe(1);                                  // a launcher before 0.14 is never asked for less
   });
   test("another display: the zoom follows its height", () => {
     const w = { zoom: 1, lines: 1080 };

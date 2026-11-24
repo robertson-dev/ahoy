@@ -12,6 +12,8 @@ export interface News { id: string; date: string; items: NewsItem[] }
 
 export const NEWS: News[] = [
   { id: "2026-11-23-handheld", date: "2026-11-23", items: [
+    { id: "handheld-any-scale", needs: "0.14.0", text: "A handheld PC is known by the real size of its screen: Big screen fits it whatever Windows' scale is set to, and a television it is docked to gets the television's size." },
+    { id: "setup-pad", needs: "0.14.0", text: "The first screen, where Ahoy asks for your server's address, works with a controller and has a keyboard of its own." },
     { id: "handheld", needs: "0.12.0", text: "On a handheld PC, Ahoy opens in Big screen at a larger size, and its controller works from the sign-in page on. Settings, This PC has both." },
     { id: "pad-moves", text: "In Big screen the controller shows where it is from the start and moves row by row. X does the highlighted game's own action." },
   ] },
