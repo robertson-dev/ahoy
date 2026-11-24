@@ -177,6 +177,7 @@ html[data-drive="pad"] .bs-hints { display: flex; }
 .bs-hints span { display: inline-flex; align-items: center; gap: 8px; }
 .bs-hints kbd, html[data-big][data-pad] .tb-nav::before, html[data-big][data-pad] .tb-nav::after { display: inline-grid; place-items: center; flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--hair-6); color: var(--fg); font: 700 11px/1 var(--ui); }
 .bs-hints kbd.bs-pad { padding: 0; border-radius: 50%; }
+.bs-note { margin-left: 4px; color: var(--fg-2); }
 .bs-status { display: flex; align-items: center; gap: 18px; height: 24px; margin-left: auto; color: var(--fg); font: 600 14px/1 var(--ui); font-variant-numeric: tabular-nums; }
 .bs-batt { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-2); }
 .bs-batt svg { color: var(--fg); }
@@ -184,6 +185,10 @@ html[data-drive="pad"] .bs-hints { display: flex; }
 /* the tabs are walked with LB and RB: they say so where they stand, once a pad has been seen */
 html[data-big][data-pad] .tb-nav::before { content: "LB"; margin-right: -4px; color: var(--fg-2); }
 html[data-big][data-pad] .tb-nav::after { content: "RB"; margin-left: -4px; color: var(--fg-2); }
+/* nor are the page's words there to be marked: nothing a pad or a finger does in the mode selects text (a handheld's
+   controller in its desktop mode sends mouse clicks for RB, and two of them marked the word under the pointer) */
+html[data-big] { -webkit-user-select: none; user-select: none; }
+html[data-big] :is(input, textarea, [contenteditable]) { -webkit-user-select: text; user-select: text; }
 /* nothing of a desktop's window is left in the mode: the stick, the wheel and a finger scroll, no bar is drawn for it */
 html[data-big], html[data-big] * { scrollbar-width: none; }
 html[data-big] ::-webkit-scrollbar { display: none; }

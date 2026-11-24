@@ -235,6 +235,8 @@ export const bigMode = {
   get lines() { return linesFor(size, display()); },
   /** is it at the handheld's size (the pages' walls are laid out for that width)? */
   get hands() { return inHandsNow(); },
+  /** is the window on a handheld's own display (whatever size was picked for it)? Its only controls are its pad and its screen */
+  get inHands() { return inHands(display()); },
   setSize(next: BigSize) { if (!BIG_SIZES.includes(next) || next === size) return; size = next; keep(SIZE_KEY, next === "auto" ? null : next); fit(); tell(); },
   /** does Ahoy open in the big screen on this device (the person's choice, else by the display)? */
   get startsBig() { return startsBig(startChoice, display()); },

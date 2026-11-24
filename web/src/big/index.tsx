@@ -174,7 +174,7 @@ function useBattery(): { level: number; charging: boolean } | null {
   return b;
 }
 
-function Foot({ pad, hints }: { pad: boolean; hints: Hint[] }) {
+function Foot({ pad, hints, note }: { pad: boolean; hints: Hint[]; note?: string }) {
   const clock = useClock();
   const batt = useBattery();
   const pct = batt ? Math.round(batt.level * 100) : 0;
@@ -182,6 +182,7 @@ function Foot({ pad, hints }: { pad: boolean; hints: Hint[] }) {
     <div className="bs-foot" aria-hidden="true">
       <div className="bs-hints">
         {hints.map(([g, label]) => <span key={label}><kbd className={pad && g.length === 1 ? "bs-pad" : undefined} data-g={pad ? g : undefined}>{g}</kbd>{label}</span>)}
+        {note && <span className="bs-note">{note}</span>}
       </div>
       <div className="bs-status">
         {batt && (
@@ -214,6 +215,11 @@ const STICK_SPEED = 26;
 /** how long the focus goes with a page that is still filling in (while the person has not moved), and how long a page come
  *  back to is given to show what was opened from it before the focus starts at the page's top instead */
 const LAND_FOLLOW = 12_000, LAND_BACK = 1500;
+/** what a handheld's controller sends for its D-pad, A and B in its desktop mode, and how long after letters were typed the
+ *  arrows are still taken for a keyboard's */
+const DESK_KEYS = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Escape"]);
+const KEYBOARD_FOR = 120_000;
+const DESK_NOTE = "The controller is in desktop mode. Switch it to gamepad mode for LB, RB, X and Y.";
 
 function Couch() {
   const router = useNavigate();
@@ -222,6 +228,17 @@ function Couch() {
   const [typing, setTyping] = useState<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const [choosing, setChoosing] = useState<HTMLSelectElement | null>(null);
   const [pad, setPad] = useState(false);
+  /**
+   * A handheld's controller in its "desktop mode" (Armoury Crate picks it by itself for a program it does not take for a game,
+   * also in the middle of a stay): no pad reaches the page. The D-pad sends arrows, A is Enter and B is Esc, so walking and
+   * choosing go on as with keys; LB, X and Y send nothing the page can use, the right stick moves the pointer, and RB is a
+   * left click wherever that pointer rests: it pressed whatever lay there, and two of them marked a word. Known by what
+   * arrives on a handheld's own display: a walking key with no keyboard typing, or a mouse click while the pointer has not
+   * moved. A button of a pad ends it.
+   */
+  const [desk, setDesk] = useState(false);
+  /** when letters were last typed on a real keyboard (its arrows are then its own, not a controller's) */
+  const typedAt = useRef(-1e9);
   /** what X does where the focus is: the card's own action, by its name (null: downloads) */
   const [quick, setQuick] = useState<string | null>(null);
   /** is the app itself up (its top bar), or the sign-in page? */
@@ -386,6 +403,8 @@ function Couch() {
       if (e.key === "Tab") drive("pad");
       if (!e.isTrusted) return;
       lastKey.current = performance.now();
+      if (/^[a-z0-9]$/i.test(e.key)) typedAt.current = lastKey.current;
+      else if (DESK_KEYS.has(e.key) && lastKey.current - typedAt.current > KEYBOARD_FOR && bigMode.inHands) setDesk(true);
       const d = DIRS[e.key], t = e.target;
       own.current = d && t instanceof HTMLElement && !(t instanceof HTMLInputElement) && ownsArrow(t, d) ? { el: t, was: whereIn(t), dir: d } : null;
     };
@@ -431,10 +450,36 @@ function Couch() {
 
   // a pad was seen: the tabs carry its LB and RB from then on (not only while it drives: the bar must not shift under a mouse)
   useEffect(() => {
-    if (!pad) return;
+    if (!pad || desk) return;
     document.documentElement.dataset.pad = "";
     return () => { delete document.documentElement.dataset.pad; };
-  }, [pad]);
+  }, [pad, desk]);
+
+  // A mouse click while the pad or the keys drive and the pointer has not moved, on a handheld's own display: nobody
+  // pointed at anything. It is the controller's RB in its desktop mode, and it is not passed on to what lies under the
+  // resting pointer. (A finger is no mouse; a pointer that was moved drives, and its clicks are clicks.)
+  useEffect(() => {
+    let eaten = false, t = 0;
+    const stop = (e: Event) => { e.preventDefault(); e.stopImmediatePropagation(); };
+    const down = (e: PointerEvent) => {
+      clearTimeout(t);
+      eaten = e.isTrusted && e.pointerType === "mouse" && document.documentElement.dataset.drive === "pad" && bigMode.inHands;
+      if (!eaten) return;
+      setDesk(true);
+      stop(e);
+    };
+    const rest = (e: Event) => {
+      if (!eaten || !e.isTrusted) return;
+      // (a key's own click, Enter on a button, is no mouse's)
+      if (e instanceof PointerEvent && e.pointerType !== "mouse") return;
+      stop(e);
+      if (e.type === "mouseup" || e.type === "pointerup") { clearTimeout(t); t = window.setTimeout(() => { eaten = false; }, 80); }
+    };
+    const REST = ["mousedown", "pointerup", "mouseup", "click", "dblclick", "auxclick", "contextmenu"] as const;
+    addEventListener("pointerdown", down, true);
+    for (const type of REST) addEventListener(type, rest, true);
+    return () => { clearTimeout(t); removeEventListener("pointerdown", down, true); for (const type of REST) removeEventListener(type, rest, true); };
+  }, []);
 
   // the right stick scrolls; the pointer hides while it rests
   useEffect(() => {
@@ -445,6 +490,7 @@ function Couch() {
           if (!p) continue;
           const y = p.axes[3] ?? 0;
           if (Math.abs(y) > 0.2) { scrollBy(0, y * STICK_SPEED); touched.current = true; }   // the page is theirs: no landing scrolls it back
+          if (p.buttons.some(b => b.pressed)) setDesk(false);                              // the pad is a pad (again)
         }
       }
       raf = requestAnimationFrame(tick);
@@ -534,7 +580,9 @@ function Couch() {
   }, []);
 
   // with a pad the way out is in the menu (☰): a handheld has no F11
-  const hints: Hint[] = typing
+  // (in a handheld's desktop mode A and B are what its Enter and Esc are pressed with, and nothing else of the pad arrives)
+  const hints: Hint[] = desk ? [["A", typing ? "Type" : "Select"], ["B", typing ? "Close" : "Back"]]
+    : typing
     ? [[pad ? "A" : "Enter", "Type"], [pad ? "X" : "⌫", "Delete"], [pad ? "Y" : "Space", "Space"], [pad ? "☰" : "Enter", nextEmptyField(typing) ? "Next" : "Done"], [pad ? "B" : "Esc", "Close"]]
     : !inApp ? [[pad ? "A" : "Enter", "Select"], [pad ? "B" : "Esc", "Back"]]
     // (with a pad the tabs themselves say LB and RB, where they are: big.css)
@@ -543,7 +591,7 @@ function Couch() {
   return <>
     {typing && <Keyboard field={typing} onDone={doneTyping} />}
     {choosing && <Chooser field={choosing} onDone={() => { const f = choosing; setChoosing(null); queueMicrotask(() => nav.refocus(f)); }} />}
-    {createPortal(<Foot pad={pad} hints={hints} />, document.body)}
+    {createPortal(<Foot pad={pad || desk} hints={hints} note={desk ? DESK_NOTE : undefined} />, document.body)}
   </>;
 }
 

@@ -16,6 +16,7 @@ export const NEWS: News[] = [
     { id: "hand-walls", needs: "0.12.0", text: "On a handheld PC, games stand five across, and a row is whole on the screen." },
     { id: "hand-pages", needs: "0.12.0", text: "On a handheld PC, games on the way stand two to a row, Friends has people and Lately side by side, and Settings uses the screen's width." },
     { id: "ticket-mark", text: "A game that didn't make it shows a small red mark on its line, not an arc across its card." },
+    { id: "desk-mode", text: "When a handheld's controller drops to desktop mode, Big screen says so, and a stray press no longer opens things or marks words." },
   ] },
   { id: "2026-11-23-handheld", date: "2026-11-23", items: [
     { id: "handheld-any-scale", needs: "0.14.0", text: "A handheld PC is known by the real size of its screen: Big screen fits it whatever Windows' scale is set to, and a television it is docked to gets the television's size." },
